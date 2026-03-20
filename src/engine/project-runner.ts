@@ -480,7 +480,18 @@ Generate JSON with ALL unique locations referenced in milestones:
 
     const systemPrompt = `You are an expert screenwriter AND cinematographer writing scenes for a ${input.genre} ${input.format}. You think like a master director — every scene has deliberate lighting, color, and camera choices that serve the emotional story. You write cinematically — thinking about what the camera sees, how light falls, what objects tell the story, and what the audience feels. Always respond with valid JSON only.`;
 
-    const userPrompt = `Write ${beat.suggestedSceneCount.min}-${beat.suggestedSceneCount.max} scenes for this story beat:
+    // Hard cap: how many 8s scenes can we still fit?
+    const maxScenesRemaining = Math.max(1, Math.floor(remainingDuration / 8));
+    const sceneCountMin = Math.min(beat.suggestedSceneCount.min, maxScenesRemaining);
+    const sceneCountMax = Math.min(beat.suggestedSceneCount.max, maxScenesRemaining);
+
+    // If no budget left, generate 0 scenes
+    if (remainingDuration < 4) {
+      console.log(`  Skipping beat "${beat.name}" — no duration budget left (${remainingDuration}s)`);
+      return { scenes: [] };
+    }
+
+    const userPrompt = `Write ${sceneCountMin === 0 ? 1 : sceneCountMin}-${sceneCountMax === 0 ? 1 : sceneCountMax} scenes for this story beat:
 
 STORY BEAT: "${beat.name}" — ${beat.description}
 Purpose: ${beat.purpose}
@@ -492,11 +503,11 @@ Runtime: ${beat.runtimePercentStart}%-${beat.runtimePercentEnd}% of total
 
 ⏱️ STRICT DURATION BUDGET — YOU MUST OBEY:
 - TOTAL PRODUCTION DURATION: ${totalDuration} seconds (${this.plan?.formatLabel || input.format})
-- This beat's budget: ~${beatDurationBudget} seconds
+- Each scene = EXACTLY 8 seconds (one Veo clip). NO other duration is possible.
 - Duration already used by previous scenes: ${usedDuration}s
-- Duration remaining for this + ${remainingMilestones - 1} more milestone(s): ${remainingDuration}s
-- Each scene in this beat should be ~${perSceneBudget} seconds (and NEVER exceed ${Math.round(perSceneBudget * 1.3)}s)
-- The SUM of all scene durations in this beat MUST be ≤ ${beatDurationBudget} seconds
+- Duration remaining: ${remainingDuration}s = room for ${maxScenesRemaining} more scene(s) MAX
+- You can generate AT MOST ${sceneCountMax === 0 ? 1 : sceneCountMax} scene(s) for this beat
+- If budget is tight, COMBINE multiple story beats into ONE scene rather than exceeding the budget
 - Scene durations must be multiples of 8 (since each video clip = 8 seconds)
 
 CURRENT MILESTONE: ${milestone.title} — ${milestone.description}
@@ -593,6 +604,12 @@ IMPORTANT:
 
     const scene = this.allScenes[sceneIndex];
     if (!scene) throw new Error(`Scene ${sceneIndex} not found`);
+
+    // Skip scenes with 0 or very short duration
+    if (!scene.estimatedDurationSeconds || scene.estimatedDurationSeconds < 2) {
+      console.log(`\n--- Phase 6: Skipping "${scene.title}" (${scene.estimatedDurationSeconds || 0}s — too short for shots) ---`);
+      return { shots: [] };
+    }
 
     console.log(`\n--- Phase 6: Breaking Down Shots for "${scene.title}" ---`);
 
@@ -717,10 +734,12 @@ RULES:
 - MUST include at least 1 insert/detail shot per scene showing an object or environmental detail
 - MUST include at least 1 close-up or extreme close-up of a face for emotional anchor
 - Emotional peaks need EXTREME close-ups — fill the frame with the face
-- The LAST FRAME of shot N should be composable with FIRST FRAME of shot N+1
-- Include FULL outfit descriptions for every character in every frame
+- The LAST FRAME of shot N MUST visually connect to FIRST FRAME of shot N+1 — same characters, same clothing, same position, smooth visual continuity
+- CHARACTER CONSISTENCY IS CRITICAL: Every character MUST look identical across ALL shots — same face, same gender, same age, same body type, same hair. Never change a character's appearance between shots.
+- Include FULL outfit descriptions for every character in every frame — describe the SAME outfit consistently
 - Every character's position must be spatially logical within the location
-- DESCRIBE LIGHTING in every frame — warm/cool, direction, quality, practical sources`;
+- DESCRIBE LIGHTING in every frame — warm/cool, direction, quality, practical sources
+- Always cinematic: dramatic composition, professional film quality, visually stunning`;
 
     const result = await this.claude.generateJSON<ShotOutput>(systemPrompt, userPrompt);
     this.allShots.set(sceneIndex, result);
