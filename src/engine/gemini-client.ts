@@ -167,13 +167,15 @@ No people in the shot. Clean background plate for compositing. High resolution, 
   }
 
   /**
-   * Generate an outfit visualization.
+   * Generate an outfit visualization on the actual character.
    */
   async generateOutfitImage(outfit: {
     characterName: string;
     outfitName: string;
     outfitDescription: string;
     outfitDetails?: Record<string, string>;
+    characterAppearance?: Record<string, unknown>;
+    portraitRef?: { base64: string; mimeType: string };
   }, style: string = 'cinematic'): Promise<ImageGenerationResult> {
     const details = outfit.outfitDetails || {};
     const detailParts = Object.entries(details)
@@ -181,17 +183,28 @@ No people in the shot. Clean background plate for compositing. High resolution, 
       .map(([k, v]) => `${k}: ${v}`)
       .join(', ');
 
-    const prompt = `Professional costume design reference for film production.
+    const app = outfit.characterAppearance || {};
+    const charDesc = [
+      app.age ? `Age: ${app.age}` : '',
+      app.gender ? `Gender: ${app.gender}` : '',
+      app.ethnicity ? `Ethnicity: ${app.ethnicity}` : '',
+      app.height ? `Height: ${app.height}` : '',
+      app.build ? `Build: ${app.build}` : '',
+      app.skinTone ? `Skin: ${app.skinTone}` : '',
+      app.hairColor ? `Hair: ${app.hairColor} ${app.hairStyle || ''} ${app.hairLength || ''}` : '',
+    ].filter(Boolean).join(', ');
+
+    const prompt = `Professional costume/wardrobe FLAT LAY reference for film production.
 
 VISUAL STYLE: ${style}
 ALL visual choices (lighting, color grading, fabric rendering, aesthetic) MUST match this style direction.
 
-Character: ${outfit.characterName}
-Outfit: "${outfit.outfitName}"
+Outfit for character: ${outfit.characterName}
+Outfit name: "${outfit.outfitName}"
 Description: ${outfit.outfitDescription}
 ${detailParts ? `Details: ${detailParts}.` : ''}
 
-Full body view on neutral background showing the complete outfit clearly. Sharp fabric detail, professional lighting. Render in the "${style}" visual style.`;
+CRITICAL: Show ONLY the clothing items laid flat or on a mannequin — do NOT show any person, face, or body. This is a wardrobe reference image showing the garments themselves: the top, bottom, footwear, and accessories arranged neatly. Clean neutral background. Sharp fabric detail, professional product photography lighting. Render in the "${style}" visual style.`;
 
     return this.generateImage(prompt, { aspectRatio: '3:4' });
   }
@@ -275,8 +288,15 @@ Maintain the exact face and appearance from the portrait reference. Sharp detail
   }, references: {
     composedCharacters: { name: string; base64: string; mimeType: string }[];
     locationBackground?: { name: string; base64: string; mimeType: string };
+    continuityFrame?: { base64: string; mimeType: string };
   }, style: string = 'cinematic'): Promise<ImageGenerationResult> {
     const parts: any[] = [];
+
+    // Continuity frame from previous shot (strongest reference for visual consistency)
+    if (references.continuityFrame) {
+      parts.push({ inlineData: { data: references.continuityFrame.base64, mimeType: references.continuityFrame.mimeType } });
+      parts.push({ text: `CONTINUITY REFERENCE: This is the last frame from the previous shot. The new frame should continue from this moment — maintain the same characters, their exact appearance, clothing, and visual style. The scene flows directly from this image.` });
+    }
 
     // Location background reference
     if (references.locationBackground) {
@@ -287,13 +307,17 @@ Maintain the exact face and appearance from the portrait reference. Sharp detail
     // Composed character references
     for (const char of references.composedCharacters) {
       parts.push({ inlineData: { data: char.base64, mimeType: char.mimeType } });
-      parts.push({ text: `This is ${char.name} — use their exact appearance, outfit, and features.` });
+      parts.push({ text: `This is ${char.name} — use their EXACT appearance, face, outfit, and features. The character must look identical to this reference.` });
     }
 
     // Character positioning details
     const charDesc = frame.characters.map(c =>
       `${c.name}: ${c.position}, ${c.pose}, expression: ${c.expression}, action: ${c.action}`
     ).join('\n');
+
+    const continuityNote = references.continuityFrame
+      ? `\nCONTINUITY: This frame continues directly from the previous shot. Characters must look IDENTICAL to the continuity reference — same face, same body, same clothing, same person. Do not change any character's appearance.`
+      : '';
 
     const promptText = `Generate a film frame. ${frame.shotSize} shot, camera: ${frame.cameraAngle}.
 
@@ -305,8 +329,8 @@ Background: ${frame.backgroundDescription}
 
 Characters:
 ${charDesc}
-
-Maintain exact character appearances from references. Professional composition, consistent with "${style}" visual direction throughout.`;
+${continuityNote}
+Maintain exact character appearances from references. Characters must be recognizably the SAME PERSON across all shots — same face, same features, same gender, same clothing. Stunning cinematic composition, dramatic lighting, professional film production quality. Visually breathtaking. Consistent with "${style}" visual direction throughout.`;
     parts.push({ text: promptText });
 
     const response = await this.ai.models.generateContent({
@@ -348,14 +372,19 @@ Maintain exact character appearances from references. Professional composition, 
     aspectRatio?: string;
     resolution?: string;
   }): Promise<unknown> {
+    const hasImage = !!params.firstFrame;
+    const hasRefs = params.referenceImages && params.referenceImages.length > 0;
+
+    // Per Veo 3.1 docs:
+    // - text-to-video: personGeneration must be "allow_all"
+    // - image-to-video / reference images: personGeneration must be "allow_adult"
     const config: Record<string, unknown> = {
       aspectRatio: params.aspectRatio || '16:9',
-      resolution: params.resolution || '720p',
-      personGeneration: 'allow_adult',
+      personGeneration: (hasImage || hasRefs) ? 'allow_adult' : 'allow_all',
     };
 
-    // Last frame for interpolation
-    if (params.lastFrame) {
+    // Last frame for interpolation (must be used with firstFrame)
+    if (params.lastFrame && hasImage) {
       config.lastFrame = {
         imageBytes: params.lastFrame.base64,
         mimeType: params.lastFrame.mimeType,
@@ -363,8 +392,9 @@ Maintain exact character appearances from references. Professional composition, 
     }
 
     // Reference images (up to 3) for character/location consistency
-    if (params.referenceImages?.length) {
-      config.referenceImages = params.referenceImages.slice(0, 3).map(ref => ({
+    // Format per docs: { image: { imageBytes, mimeType }, referenceType: "asset" }
+    if (hasRefs) {
+      config.referenceImages = params.referenceImages!.slice(0, 3).map(ref => ({
         image: {
           imageBytes: ref.base64,
           mimeType: ref.mimeType,
@@ -379,15 +409,52 @@ Maintain exact character appearances from references. Professional composition, 
       config,
     };
 
-    // First frame as starting image
-    if (params.firstFrame) {
+    // First frame as starting image (top-level "image" parameter)
+    if (hasImage) {
       genParams.image = {
-        imageBytes: params.firstFrame.base64,
-        mimeType: params.firstFrame.mimeType,
+        imageBytes: params.firstFrame!.base64,
+        mimeType: params.firstFrame!.mimeType,
       };
     }
 
-    return (this.ai.models as any).generateVideos(genParams);
+    console.log(`Starting video generation: ${hasImage ? 'image-to-video' : 'text-to-video'}, refs: ${params.referenceImages?.length || 0}, aspect: ${config.aspectRatio}`);
+
+    try {
+      return await (this.ai.models as any).generateVideos(genParams);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error('Video generation failed:', msg);
+
+      // If it fails with references/lastFrame, retry without them
+      if (msg.includes('INVALID_ARGUMENT') || msg.includes('Unsupported')) {
+        console.log('Retrying with simpler config...');
+        delete config.referenceImages;
+        delete config.lastFrame;
+        config.personGeneration = hasImage ? 'allow_adult' : 'allow_all';
+
+        try {
+          return await (this.ai.models as any).generateVideos(genParams);
+        } catch (err2: unknown) {
+          const msg2 = err2 instanceof Error ? err2.message : String(err2);
+          console.error('Retry also failed:', msg2);
+
+          // Final fallback: text-only, no image
+          if (hasImage && (msg2.includes('INVALID_ARGUMENT') || msg2.includes('Unsupported'))) {
+            console.log('Final fallback: text-to-video only...');
+            return await (this.ai.models as any).generateVideos({
+              model: VEO_MODEL,
+              prompt: params.prompt,
+              config: {
+                aspectRatio: params.aspectRatio || '16:9',
+                personGeneration: 'allow_all',
+              },
+            });
+          }
+          throw err2;
+        }
+      }
+      throw err;
+    }
   }
 
   /**

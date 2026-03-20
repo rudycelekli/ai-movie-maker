@@ -663,6 +663,19 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
   }
+  /* Genre chips (multi-select) */
+  .genre-chips {
+    display: flex; flex-wrap: wrap; gap: 0.4rem;
+  }
+  .genre-chip {
+    padding: 0.35rem 0.7rem; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 16px; color: var(--text2); cursor: pointer; font-size: 0.8rem;
+    font-family: inherit; font-weight: 500; transition: all 0.2s; user-select: none;
+  }
+  .genre-chip:hover { border-color: var(--accent); color: var(--text); }
+  .genre-chip.selected {
+    background: rgba(99, 102, 241, 0.2); border-color: var(--accent); color: var(--accent2); font-weight: 600;
+  }
   .format-card {
     padding: 0.6rem 0.4rem;
     background: var(--surface2);
@@ -1383,20 +1396,24 @@
           <button class="lock-toggle" onclick="toggleLock('genre')">🔓</button>
         </div>
       </div>
-      <select id="genre">
-        <option value="drama">Drama</option>
-        <option value="comedy">Comedy</option>
-        <option value="horror">Horror</option>
-        <option value="thriller">Thriller</option>
-        <option value="romance">Romance</option>
-        <option value="action">Action</option>
-        <option value="sci-fi">Sci-Fi</option>
-        <option value="fantasy">Fantasy</option>
-        <option value="mystery">Mystery</option>
-        <option value="adventure">Adventure</option>
-        <option value="animation">Animation</option>
-        <option value="family">Family</option>
-      </select>
+      <div class="genre-chips" id="genre">
+        <button class="genre-chip selected" data-genre="drama" onclick="toggleGenre(this)">Drama</button>
+        <button class="genre-chip" data-genre="comedy" onclick="toggleGenre(this)">Comedy</button>
+        <button class="genre-chip" data-genre="horror" onclick="toggleGenre(this)">Horror</button>
+        <button class="genre-chip" data-genre="thriller" onclick="toggleGenre(this)">Thriller</button>
+        <button class="genre-chip" data-genre="romance" onclick="toggleGenre(this)">Romance</button>
+        <button class="genre-chip" data-genre="action" onclick="toggleGenre(this)">Action</button>
+        <button class="genre-chip" data-genre="sci-fi" onclick="toggleGenre(this)">Sci-Fi</button>
+        <button class="genre-chip" data-genre="fantasy" onclick="toggleGenre(this)">Fantasy</button>
+        <button class="genre-chip" data-genre="mystery" onclick="toggleGenre(this)">Mystery</button>
+        <button class="genre-chip" data-genre="adventure" onclick="toggleGenre(this)">Adventure</button>
+        <button class="genre-chip" data-genre="animation" onclick="toggleGenre(this)">Animation</button>
+        <button class="genre-chip" data-genre="family" onclick="toggleGenre(this)">Family</button>
+        <button class="genre-chip" data-genre="documentary" onclick="toggleGenre(this)">Documentary</button>
+        <button class="genre-chip" data-genre="musical" onclick="toggleGenre(this)">Musical</button>
+        <button class="genre-chip" data-genre="noir" onclick="toggleGenre(this)">Noir</button>
+        <button class="genre-chip" data-genre="western" onclick="toggleGenre(this)">Western</button>
+      </div>
     </div>
 
     <div class="field" id="field-format">
@@ -1554,6 +1571,22 @@
   let selectedFormat = '';
   const sessionId = 'session_' + Math.random().toString(36).slice(2);
 
+  // ── Genre multi-select ──
+  function toggleGenre(chip) {
+    chip.classList.toggle('selected');
+    // Ensure at least one genre is selected
+    const selected = document.querySelectorAll('.genre-chip.selected');
+    if (selected.length === 0) chip.classList.add('selected');
+  }
+
+  function getSelectedGenres() {
+    return [...document.querySelectorAll('.genre-chip.selected')].map(c => c.dataset.genre);
+  }
+
+  function getGenreString() {
+    return getSelectedGenres().join(', ');
+  }
+
   // ── Format selection ──
   function selectFormat(btn) {
     document.querySelectorAll('.format-card').forEach(b => b.classList.remove('active'));
@@ -1606,10 +1639,12 @@
   }
 
   function fallbackRandomize() {
-    // Random genre
-    const genreEl = document.getElementById('genre');
-    const genres = [...genreEl.options].map(o => o.value);
-    genreEl.value = genres[Math.floor(Math.random() * genres.length)];
+    // Random genre (select 1-2 random genres)
+    const chips = [...document.querySelectorAll('.genre-chip')];
+    chips.forEach(c => c.classList.remove('selected'));
+    const shuffled = chips.sort(() => Math.random() - 0.5);
+    const count = Math.random() > 0.5 ? 2 : 1;
+    shuffled.slice(0, count).forEach(c => c.classList.add('selected'));
 
     // Random format
     const fmtKeys = ['ad-commercial-15','ad-commercial-30','ad-commercial-60','trailer','music-video','short-film'];
@@ -1662,7 +1697,7 @@
 
     const input = {
       title: document.getElementById('title').value,
-      genre: document.getElementById('genre').value,
+      genre: getGenreString(),
       format: selectedFormat,
       mainPlot: document.getElementById('mainPlot').value || undefined,
       tone: document.getElementById('tone').value || undefined,
@@ -2252,7 +2287,7 @@
     const formatLabel = FORMAT_LABELS[fmt] || fmt;
     return {
       title: document.getElementById('title').value,
-      genre: document.getElementById('genre').value,
+      genre: getGenreString(),
       format: fmt,
       formatDescription: fmt ? formatLabel : '',
       mainPlot: document.getElementById('mainPlot').value,
@@ -2267,10 +2302,16 @@
   function applyValues(data) {
     if (data.title != null) document.getElementById('title').value = data.title;
     if (data.genre != null) {
-      const genreEl = document.getElementById('genre');
-      const val = data.genre.toLowerCase();
-      const opt = [...genreEl.options].find(o => o.value === val);
-      if (opt) genreEl.value = val;
+      // Support comma-separated genre strings from AI
+      const genres = String(data.genre).toLowerCase().split(/[,\/&+]+/).map(g => g.trim());
+      const chips = document.querySelectorAll('.genre-chip');
+      chips.forEach(c => c.classList.remove('selected'));
+      genres.forEach(g => {
+        const chip = [...chips].find(c => c.dataset.genre === g);
+        if (chip) chip.classList.add('selected');
+      });
+      // Ensure at least one is selected
+      if (!document.querySelector('.genre-chip.selected') && chips.length) chips[0].classList.add('selected');
     }
     if (data.format != null) {
       // AI returned a format — find the matching card
@@ -2711,7 +2752,7 @@
   function getFormInput() {
     return {
       title: document.getElementById('title').value,
-      genre: document.getElementById('genre').value,
+      genre: getGenreString(),
       format: selectedFormat,
       mainPlot: document.getElementById('mainPlot').value || undefined,
       tone: document.getElementById('tone').value || undefined,
@@ -2776,10 +2817,30 @@
 
   // ── Image Generation (Gemini Nano Banana Pro) ──
 
+  function isVoiceOnlyCharacter(c) {
+    if (!c) return false;
+    const role = (c.role || '').toLowerCase();
+    const name = (c.name || '').toLowerCase();
+    const app = c.appearance || {};
+    const skin = (app.skinTone || '').toLowerCase();
+    const hair = (app.hairColor || '').toLowerCase();
+    const features = ((app.distinctiveFeatures || []).join(' ')).toLowerCase();
+    return role === 'narrator' ||
+      name.includes('narrator') || name.includes('voiceover') || name.includes('voice-over') ||
+      skin.includes('not visible') || skin.includes('voice only') ||
+      hair.includes('not visible') || hair.includes('voice only') ||
+      features.includes('never seen') || features.includes('voice only');
+  }
+
   async function generateCharacterImage(charIndex) {
     const chars = lastGeneratedData?.characters?.characters || [];
     const c = chars[charIndex];
     if (!c) return;
+
+    if (isVoiceOnlyCharacter(c)) {
+      alert(`"${c.name}" is a voice-only character — no portrait needed.`);
+      return;
+    }
 
     const btn = event?.target;
     const portrait = btn?.closest('.char-portrait');
@@ -2876,6 +2937,11 @@
     }
   }
 
+  // Helper: find character data by name
+  function getCharacterData(name) {
+    return (lastGeneratedData?.characters?.characters || []).find(c => c.name === name);
+  }
+
   async function generateOutfitImage(characterName, sceneIndex) {
     const wp = preProductionData?.wardrobePlan?.wardrobeEntries || [];
     const entry = wp.find(w => w.characterName === characterName && w.sceneIndex === sceneIndex);
@@ -2887,6 +2953,7 @@
 
     try {
       const style = lastGeneratedData?.concept?.visualStyleRecommendation || 'cinematic';
+      const charData = getCharacterData(entry.characterName);
       const res = await fetch('/api/generate-image/outfit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2895,6 +2962,8 @@
           outfitName: entry.outfitName,
           outfitDescription: entry.outfitDescription,
           outfitDetails: entry.outfitDetails,
+          characterAppearance: charData?.appearance || {},
+          portraitRef: charData?.generatedPortrait || null,
           style,
         }),
       });
@@ -2934,6 +3003,7 @@
       if (btn) btn.textContent = `Generating outfit ${i + 1}/${wp.length}...`;
       try {
         const style = lastGeneratedData?.concept?.visualStyleRecommendation || 'cinematic';
+        const charData = getCharacterData(entry.characterName);
         const res = await fetch('/api/generate-image/outfit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2942,6 +3012,8 @@
             outfitName: entry.outfitName,
             outfitDescription: entry.outfitDescription,
             outfitDetails: entry.outfitDetails,
+            characterAppearance: charData?.appearance || {},
+            portraitRef: charData?.generatedPortrait || null,
             style,
           }),
         });
@@ -3113,6 +3185,9 @@
         if (!f) continue;
         if (btn) btn.textContent = `Generating frame ${fi + 1}/2...`;
         try {
+          // Build continuity reference: chain from previous shot's last frame
+          const continuityRef = (fi === 0 && shot._chainedFromPrevious) ? shot._chainedFromPrevious : null;
+
           const res = await fetch('/api/generate-image/shot-frame', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -3133,6 +3208,7 @@
               references: {
                 composedCharacters: composedChars,
                 locationBackground: locBg ? { name: loc.name, base64: locBg.base64, mimeType: locBg.mimeType } : null,
+                continuityFrame: continuityRef,
               },
               style,
             }),
@@ -3172,17 +3248,42 @@
       total += sceneShots.length;
     }
 
+    // Chain frames: previous shot's last frame informs next shot's first frame
+    let previousLastFrame = null;
+    let previousLocation = null;
+    const cp = preProductionData?.continuityPlan?.entries || [];
+
     for (let i = 0; i < scenes.length; i++) {
       const sceneShots = shots[i]?.shots || shots[String(i)]?.shots || [];
+      const scene = scenes[i];
+      const sceneEntry = cp.find(e => e.sceneIndex === i);
+      const currentLocation = sceneEntry?.locationName || scene?.locationName || '';
+      const locationChanged = previousLocation && currentLocation !== previousLocation;
+
       for (let j = 0; j < sceneShots.length; j++) {
+        const shot = sceneShots[j];
         if (btn) btn.textContent = `Generating ${generated + 1}/${total}...`;
+
+        // Chain: if same location & we have a previous last frame,
+        // copy it as visual context for this shot's first frame
+        if (j === 0 && previousLastFrame && !locationChanged && !shot.firstFrame?.generatedImage) {
+          // Same location continuity: carry the previous shot's last frame look
+          shot._chainedFromPrevious = previousLastFrame;
+        }
+
         try {
           await generateShotFrames(i, j);
           generated++;
+
+          // Store last frame for chaining to next shot
+          if (shot.lastFrame?.generatedImage) {
+            previousLastFrame = shot.lastFrame.generatedImage;
+          }
         } catch (err) {
           console.error('Frame generation failed:', err);
         }
       }
+      previousLocation = currentLocation;
     }
 
     if (btn) { btn.textContent = `Generate All Images (${generated}/${total} done)`; btn.disabled = false; }
@@ -3304,7 +3405,13 @@ Render in the "${visualStyle}" visual style throughout. Professional film produc
       }
     } catch (err) {
       if (btn) { btn.textContent = 'Generate Video'; btn.disabled = false; }
-      if (statusEl) statusEl.textContent = 'Failed: ' + err.message;
+      const errMsg = String(err?.message || err);
+      if (errMsg.includes('429') || errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('quota')) {
+        if (statusEl) statusEl.textContent = 'Quota exceeded — try again later';
+        if (statusEl) statusEl.style.color = 'var(--red)';
+      } else {
+        if (statusEl) statusEl.textContent = 'Failed: ' + err.message;
+      }
       console.error('Video generation failed:', err);
     }
   }
@@ -3331,6 +3438,15 @@ Render in the "${visualStyle}" visual style throughout. Professional film produc
           generated++;
         } catch (err) {
           console.error('Video generation failed:', err);
+          const errMsg = String(err?.message || err);
+          // Stop immediately on quota/billing errors — don't waste more requests
+          if (errMsg.includes('429') || errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('quota')) {
+            if (btn) btn.textContent = `Quota exceeded — ${generated}/${total} done`;
+            btn.disabled = false;
+            alert('Video generation quota exceeded. Please check your Gemini API billing at ai.dev/rate-limit and try again later.');
+            buildFinalCutPlaylist();
+            return;
+          }
         }
       }
     }
@@ -3796,12 +3912,28 @@ Render in the "${visualStyle}" visual style throughout. Professional film produc
         <div class="timeline-stat"><span class="stat-val">${totalDuration}s</span> Total</div>
         <div class="timeline-stat">Format: <span class="stat-val">${esc(data.plan?.formatLabel || selectedFormat)}</span></div>
       </div>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;">`;
+
+    // Count frames ready
+    let framesReady = 0, framesTotal = 0;
+    let videosReady = 0;
+    for (const [, shotOutput] of Object.entries(shots)) {
+      const s = shotOutput.shots || [];
+      s.forEach(shot => {
+        if (shot.firstFrame?.generatedImage) framesReady++;
+        if (shot.lastFrame?.generatedImage) framesReady++;
+        framesTotal += 2;
+        if (shot.generatedVideoUrl) videosReady++;
+      });
+    }
+    const allFramesDone = framesReady === framesTotal && framesTotal > 0;
+
+    html += `
         <button class="generate-all-images-btn" onclick="generateAllFrames()">
-          Generate All Images (${totalShots * 2} frames)
+          Generate All Images (${framesReady > 0 ? framesReady + '/' + framesTotal + ' done' : framesTotal + ' frames'})
         </button>
-        <button class="generate-all-images-btn" onclick="generateAllVideos()" style="background:linear-gradient(135deg, var(--accent), var(--pink));">
-          Generate All Videos (${(() => { let r=0; for(const[,so] of Object.entries(shots)){(so.shots||[]).forEach(s=>{if(s.generatedVideoUrl)r++})} return r>0?r+'/'+totalShots+' done':totalShots+' clips'; })()})
+        <button class="generate-all-images-btn" onclick="generateAllVideos()" style="background:linear-gradient(135deg, var(--accent), var(--pink));${allFramesDone ? '' : 'opacity:0.4;cursor:not-allowed;'}" ${allFramesDone ? '' : 'disabled title="Generate all frames first"'}>
+          Generate All Videos (${videosReady > 0 ? videosReady + '/' + totalShots + ' done' : totalShots + ' clips'})
         </button>
       </div>
       <div class="timeline-scenes">`;

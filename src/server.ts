@@ -603,6 +603,7 @@ app.post('/api/generate-image/character', async (req, res) => {
     );
     res.json(result);
   } catch (err: unknown) {
+    console.error('Character image error:', err);
     const message = err instanceof Error ? err.message : 'Image generation failed';
     res.status(500).json({ error: message });
   }
@@ -625,16 +626,17 @@ app.post('/api/generate-image/location', async (req, res) => {
 });
 
 app.post('/api/generate-image/outfit', async (req, res) => {
-  const { characterName, outfitName, outfitDescription, outfitDetails, style } = req.body;
+  const { characterName, outfitName, outfitDescription, outfitDetails, style, characterAppearance, portraitRef } = req.body;
 
   try {
     const g = getGemini();
     const result = await g.generateOutfitImage(
-      { characterName, outfitName, outfitDescription, outfitDetails },
+      { characterName, outfitName, outfitDescription, outfitDetails, characterAppearance, portraitRef },
       style || 'cinematic'
     );
     res.json(result);
   } catch (err: unknown) {
+    console.error('Outfit generation error:', err);
     const message = err instanceof Error ? err.message : 'Image generation failed';
     res.status(500).json({ error: message });
   }
@@ -690,6 +692,7 @@ app.post('/api/generate-image/shot-frame', async (req, res) => {
       {
         composedCharacters: references?.composedCharacters || [],
         locationBackground: references?.locationBackground || undefined,
+        continuityFrame: references?.continuityFrame || undefined,
       },
       style || 'cinematic'
     );
@@ -740,6 +743,7 @@ app.post('/api/generate-video/shot', async (req, res) => {
 
     res.json({ jobId });
   } catch (err: unknown) {
+    console.error('Video generation start error:', err);
     const message = err instanceof Error ? err.message : 'Video generation start failed';
     res.status(500).json({ error: message });
   }

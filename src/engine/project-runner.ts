@@ -345,7 +345,9 @@ ${input.kidMode ? `KID MODE: Characters must be appealing to ${input.kidAgeRange
 
 Characters do NOT have to be human. They can be animals, robots, aliens, monsters, mythical creatures, anthropomorphic objects — ANYTHING the story needs. Adapt appearance fields accordingly.
 
-Generate JSON with ALL characters referenced in the milestones:
+IMPORTANT: Do NOT create characters for narrators, voiceover artists, or off-screen voices. Only create characters that are VISUALLY PRESENT on screen. Narration should be handled through audio/dialogue direction in scenes, not as character entries.
+
+Generate JSON with ALL characters that are VISUALLY PRESENT in the milestones:
 {
   "characters": [
     {

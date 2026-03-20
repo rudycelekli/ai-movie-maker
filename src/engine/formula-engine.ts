@@ -186,7 +186,10 @@ For EACH character generate a complete character profile:
   "arc": "brief description of their character arc across the story"
 }
 
-IMPORTANT: Be extremely specific about visual details. Every detail you specify will be used to generate consistent AI images across hundreds of scenes. Vague descriptions = inconsistent characters. For non-human characters, the "bodyDescription" field is CRITICAL — describe the full physical form in vivid detail.`,
+IMPORTANT RULES:
+- Be extremely specific about visual details. Every detail you specify will be used to generate consistent AI images across hundreds of scenes. Vague descriptions = inconsistent characters.
+- For non-human characters, the "bodyDescription" field is CRITICAL — describe the full physical form in vivid detail.
+- Do NOT create characters for narrators, voiceover artists, or off-screen voices. Only create characters that are VISUALLY PRESENT on screen. If the story has a narrator, handle that through audio/dialogue direction in scenes, NOT as a character entry.`,
 
   // Phase 4: Generate locations
   LOCATIONS: `You are a production designer for film. Design all locations needed for this story.
