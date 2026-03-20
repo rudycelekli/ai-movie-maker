@@ -679,6 +679,11 @@ app.post('/api/generate-image/shot-frame', async (req, res) => {
     return;
   }
 
+  const hasContRef = !!references?.continuityFrame;
+  const hasLocRef = !!references?.locationBackground;
+  const charRefCount = references?.composedCharacters?.length || 0;
+  console.log(`Shot frame: "${frame.description?.slice(0, 60)}..." | refs: ${charRefCount} chars, loc:${hasLocRef}, continuity:${hasContRef}`);
+
   try {
     const g = getGemini();
     const result = await g.generateShotFrame(

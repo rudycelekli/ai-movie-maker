@@ -3264,10 +3264,9 @@
         const shot = sceneShots[j];
         if (btn) btn.textContent = `Generating ${generated + 1}/${total}...`;
 
-        // Chain: if same location & we have a previous last frame,
-        // copy it as visual context for this shot's first frame
-        if (j === 0 && previousLastFrame && !locationChanged && !shot.firstFrame?.generatedImage) {
-          // Same location continuity: carry the previous shot's last frame look
+        // Chain: ALWAYS pass previous shot's last frame for character continuity
+        // Even across location changes, characters should look the same
+        if (previousLastFrame && !shot.firstFrame?.generatedImage) {
           shot._chainedFromPrevious = previousLastFrame;
         }
 
