@@ -1,0 +1,358 @@
+{
+  "id": "comedy-feature",
+  "name": "Comedy Feature Film",
+  "description": "Comedy-optimized Save the Cat structure with built-in timing for setups, punchlines, callbacks, running gags, and the Rule of Threes.",
+  "genre": "comedy",
+  "format": "feature-film",
+  "baseStructure": "save-the-cat",
+  "totalBeats": 15,
+  "beats": [
+    {
+      "id": "opening-image",
+      "name": "Opening Image / Cold Open Gag",
+      "description": "A comedic snapshot that establishes tone. Often the protagonist's most embarrassing or absurd moment in their ordinary world. Sets up the 'normal' that comedy will subvert.",
+      "purpose": "Get the first laugh. Establish comedic tone immediately.",
+      "runtimePercentStart": 0,
+      "runtimePercentEnd": 2,
+      "durationPercent": 2,
+      "tensionLevel": 1,
+      "emotionalTone": "comedic",
+      "requiredElements": [
+        { "type": "comic-relief", "description": "First joke/gag within 30 seconds", "mandatory": true },
+        { "type": "character-intro", "description": "Protagonist shown in an absurd or relatable situation", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "transitionIn": "fade-in",
+      "musicMood": "comedic-sting",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "theme-stated",
+      "name": "Theme Stated (Ironic Advice)",
+      "description": "Someone gives the protagonist advice they'll initially ignore. In comedy, this is often delivered ironically or the protagonist openly mocks it.",
+      "purpose": "Plant the theme the protagonist will learn the hard way.",
+      "runtimePercentStart": 4,
+      "runtimePercentEnd": 6,
+      "durationPercent": 2,
+      "tensionLevel": 1,
+      "emotionalTone": "comedic",
+      "requiredElements": [
+        { "type": "dialogue-heavy", "description": "Theme delivered in a funny way — protagonist dismisses it", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 1 },
+      "musicMood": "none",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "setup",
+      "name": "Set-Up (Comedy World Building)",
+      "description": "Establish the protagonist's comedic world. Introduce their flaws as comedic traits. Set up running gags (minimum 3). Introduce the ensemble cast with their quirks.",
+      "purpose": "Plant all comedic setups that will pay off later. Minimum 3 running gags established.",
+      "runtimePercentStart": 1,
+      "runtimePercentEnd": 10,
+      "durationPercent": 9,
+      "tensionLevel": 2,
+      "emotionalTone": "comedic",
+      "requiredElements": [
+        { "type": "character-intro", "description": "Introduce ensemble cast with distinct comedic traits", "mandatory": true },
+        { "type": "comic-relief", "description": "Establish at least 3 running gags", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 3, "max": 6 },
+      "musicMood": "subtle-underscore",
+      "pacingSpeed": "medium",
+      "genreSpecific": {
+        "comedy": {
+          "requiredElements": [
+            { "type": "comic-relief", "description": "Joke density: at least 1 laugh every 30-45 seconds", "mandatory": true }
+          ]
+        }
+      }
+    },
+    {
+      "id": "catalyst",
+      "name": "Catalyst (The Absurd Disruption)",
+      "description": "Something ridiculous happens that changes everything. In comedy, the inciting incident should be inherently funny or lead to an inherently funny situation.",
+      "purpose": "Launch the comedy premise. The 'what if' moment.",
+      "runtimePercentStart": 10,
+      "runtimePercentEnd": 12,
+      "durationPercent": 2,
+      "tensionLevel": 4,
+      "emotionalTone": "comedic",
+      "requiredElements": [
+        { "type": "plot-point", "description": "An absurd, funny event disrupts the protagonist's world", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "musicMood": "comedic-sting",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "debate",
+      "name": "Debate (Comedy of Errors Begins)",
+      "description": "The protagonist tries to avoid the new situation, creating escalating mishaps. Each attempt to restore normalcy makes things funnier/worse.",
+      "purpose": "Build comedic momentum through escalating failed attempts.",
+      "runtimePercentStart": 11,
+      "runtimePercentEnd": 23,
+      "durationPercent": 12,
+      "tensionLevel": 3,
+      "emotionalTone": "comedic",
+      "requiredElements": [
+        { "type": "comic-relief", "description": "Series of escalating comedic mishaps", "mandatory": true },
+        { "type": "dialogue-heavy", "description": "Funny dialogue exploring the protagonist's denial", "mandatory": false }
+      ],
+      "suggestedSceneCount": { "min": 3, "max": 5 },
+      "musicMood": "comedic-sting",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "break-into-two",
+      "name": "Break Into Two (All-In on Absurdity)",
+      "description": "The protagonist commits to the absurd situation, either willingly or because they have no choice. They dive into the comedy premise fully.",
+      "purpose": "End of setup — now we deliver on the premise. Maximum comedy begins.",
+      "runtimePercentStart": 22,
+      "runtimePercentEnd": 25,
+      "durationPercent": 3,
+      "tensionLevel": 4,
+      "emotionalTone": "excited",
+      "requiredElements": [
+        { "type": "plot-point", "description": "Protagonist fully commits to the premise", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "musicMood": "action-driving",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "b-story",
+      "name": "B Story (Heart of the Comedy)",
+      "description": "The relationship that grounds the comedy in genuine emotion. Usually a romance or deep friendship. This is where the movie has a 'heart'.",
+      "purpose": "Provide emotional depth. The audience cares because of this relationship.",
+      "runtimePercentStart": 25,
+      "runtimePercentEnd": 30,
+      "durationPercent": 5,
+      "tensionLevel": 2,
+      "emotionalTone": "romantic",
+      "requiredElements": [
+        { "type": "character-intro", "description": "The 'heart' character — love interest or genuine friend", "mandatory": true },
+        { "type": "dialogue-heavy", "description": "Genuine connection moment amid the comedy", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 3 },
+      "musicMood": "romantic-theme",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "fun-and-games",
+      "name": "Fun and Games (Peak Comedy)",
+      "description": "THE COMEDY SHOWCASE. Maximum joke density. Set pieces. Physical comedy. The trailer moments. All running gags hit their second beat (Rule of Threes).",
+      "purpose": "Deliver maximum laughs. This is the section the audience came for.",
+      "runtimePercentStart": 27,
+      "runtimePercentEnd": 50,
+      "durationPercent": 23,
+      "tensionLevel": 4,
+      "emotionalTone": "comedic",
+      "requiredElements": [
+        { "type": "action-sequence", "description": "Major comedy set pieces (2-3 big sequences)", "mandatory": true },
+        { "type": "comic-relief", "description": "Running gags hit their 2nd beat (Rule of Threes)", "mandatory": true },
+        { "type": "montage", "description": "Optional comedy montage showing escalation", "mandatory": false }
+      ],
+      "suggestedSceneCount": { "min": 6, "max": 12 },
+      "musicMood": "comedic-sting",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "midpoint",
+      "name": "Midpoint (The Lie Works... Too Well)",
+      "description": "FALSE VICTORY: The protagonist's comedic scheme appears to succeed spectacularly. Everything is perfect... which means it's about to go very wrong.",
+      "purpose": "Peak of false success. The bigger the high, the funnier the fall.",
+      "runtimePercentStart": 49,
+      "runtimePercentEnd": 52,
+      "durationPercent": 3,
+      "tensionLevel": 5,
+      "emotionalTone": "joyful",
+      "requiredElements": [
+        { "type": "plot-point", "description": "The protagonist's plan succeeds beyond expectations", "mandatory": true },
+        { "type": "revelation", "description": "Hint that this success is built on shaky ground", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "musicMood": "triumphant-swell",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "bad-guys-close-in",
+      "name": "Bad Guys Close In (The Lie Unravels)",
+      "description": "The deception/scheme starts falling apart. Misunderstandings compound. The protagonist juggles increasingly impossible situations. Comedy of errors peaks.",
+      "purpose": "Escalating comedy of complications. Things go wrong in increasingly funny ways.",
+      "runtimePercentStart": 50,
+      "runtimePercentEnd": 68,
+      "durationPercent": 18,
+      "tensionLevel": 6,
+      "emotionalTone": "anxious",
+      "requiredElements": [
+        { "type": "comic-relief", "description": "Escalating complications — each fix creates two new problems", "mandatory": true },
+        { "type": "confrontation", "description": "Close calls where the truth almost comes out", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 5, "max": 9 },
+      "musicMood": "suspense-pulse",
+      "pacingSpeed": "very-fast"
+    },
+    {
+      "id": "all-is-lost",
+      "name": "All Is Lost (The Truth Comes Out)",
+      "description": "The lie is exposed. The B-Story character discovers the deception. The protagonist loses everything they gained AND the genuine relationship they built.",
+      "purpose": "The big reveal. Comedy stops. The audience feels the weight of the lie.",
+      "runtimePercentStart": 67,
+      "runtimePercentEnd": 70,
+      "durationPercent": 3,
+      "tensionLevel": 8,
+      "emotionalTone": "sad",
+      "requiredElements": [
+        { "type": "revelation", "description": "The deception is fully exposed", "mandatory": true },
+        { "type": "emotional-peak", "description": "Genuine hurt from the B-Story character", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "musicMood": "silence",
+      "pacingSpeed": "slow"
+    },
+    {
+      "id": "dark-night-of-soul",
+      "name": "Dark Night of the Soul (Lonely Without Laughs)",
+      "description": "The protagonist is alone. No more jokes. The comedy pauses for genuine emotional vulnerability. This is the scene that earns the movie its emotional credibility.",
+      "purpose": "Show the protagonist's genuine remorse. No comedy — pure heart.",
+      "runtimePercentStart": 68,
+      "runtimePercentEnd": 77,
+      "durationPercent": 9,
+      "tensionLevel": 3,
+      "emotionalTone": "melancholic",
+      "requiredElements": [
+        { "type": "emotional-peak", "description": "Protagonist alone, genuinely vulnerable — no jokes", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 2, "max": 3 },
+      "musicMood": "melancholic-piano",
+      "pacingSpeed": "very-slow"
+    },
+    {
+      "id": "break-into-three",
+      "name": "Break Into Three (The Honest Approach)",
+      "description": "The protagonist realizes the truth they were told at the beginning. They decide to fix things the RIGHT way — through honesty, not deception.",
+      "purpose": "Comedy and heart merge. The protagonist earns their redemption through authenticity.",
+      "runtimePercentStart": 76,
+      "runtimePercentEnd": 79,
+      "durationPercent": 3,
+      "tensionLevel": 5,
+      "emotionalTone": "hopeful",
+      "requiredElements": [
+        { "type": "revelation", "description": "Protagonist understands the theme through their own experience", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "musicMood": "building-tension",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "finale",
+      "name": "Finale (Grand Gesture + Callbacks)",
+      "description": "The protagonist makes a grand, honest gesture to win back what they lost. ALL running gags hit their third beat. Callbacks to setups throughout the film pay off.",
+      "purpose": "Maximum satisfaction: emotional resolution + comedy payoffs. All setups pay off.",
+      "runtimePercentStart": 77,
+      "runtimePercentEnd": 99,
+      "durationPercent": 22,
+      "tensionLevel": 7,
+      "emotionalTone": "triumphant",
+      "requiredElements": [
+        { "type": "action-sequence", "description": "Grand gesture scene — public, honest, probably embarrassing", "mandatory": true },
+        { "type": "comic-relief", "description": "ALL running gags hit their 3rd beat (Rule of Threes completion)", "mandatory": true },
+        { "type": "emotional-peak", "description": "B-Story character forgives through seeing genuine change", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 4, "max": 8 },
+      "musicMood": "full-orchestral",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "final-image",
+      "name": "Final Image (Tag Gag)",
+      "description": "Mirror of the opening, but the world is transformed. Often includes a final joke or callback. The new 'normal' is funnier and better than the old one.",
+      "purpose": "Last laugh. Visual proof of growth. Leave the audience smiling.",
+      "runtimePercentStart": 99,
+      "runtimePercentEnd": 100,
+      "durationPercent": 1,
+      "tensionLevel": 1,
+      "emotionalTone": "joyful",
+      "requiredElements": [
+        { "type": "comic-relief", "description": "Final joke or callback that gets the last laugh", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 1 },
+      "transitionOut": "fade-to-black",
+      "musicMood": "comedic-sting",
+      "pacingSpeed": "medium"
+    }
+  ],
+  "pacingProfile": {
+    "overall": "fast-paced",
+    "tensionCurve": [
+      { "runtimePercent": 0, "tensionLevel": 3, "label": "Opening Gag" },
+      { "runtimePercent": 11, "tensionLevel": 4, "label": "Absurd Catalyst" },
+      { "runtimePercent": 25, "tensionLevel": 5, "label": "All-In" },
+      { "runtimePercent": 35, "tensionLevel": 4, "label": "Peak Fun" },
+      { "runtimePercent": 50, "tensionLevel": 5, "label": "False Victory" },
+      { "runtimePercent": 60, "tensionLevel": 6, "label": "Unraveling" },
+      { "runtimePercent": 68, "tensionLevel": 8, "label": "Truth Exposed" },
+      { "runtimePercent": 73, "tensionLevel": 2, "label": "Dark Night" },
+      { "runtimePercent": 78, "tensionLevel": 5, "label": "Honest Plan" },
+      { "runtimePercent": 90, "tensionLevel": 7, "label": "Grand Gesture" },
+      { "runtimePercent": 100, "tensionLevel": 1, "label": "Tag Gag" }
+    ],
+    "sceneLength": {
+      "averageSeconds": 90,
+      "shortScenePercent": 30,
+      "longScenePercent": 10
+    }
+  },
+  "genreRules": [
+    { "rule": "First laugh within 30 seconds of the film starting", "timing": "0-0.5%" },
+    { "rule": "Joke density: minimum 1 laugh per 30-45 seconds in comedic scenes", "timing": "throughout" },
+    { "rule": "Rule of Threes: every running gag needs exactly 3 beats — setup, callback, payoff", "timing": "setup (0-10%), callback (27-50%), payoff (77-99%)" },
+    { "rule": "The Dark Night of the Soul must have ZERO jokes — this earns emotional credibility", "timing": "68-77%" },
+    { "rule": "Callback spacing: at least 20-40 minutes between setup and first callback", "timing": "throughout" },
+    { "rule": "Comedic escalation in sets of 3: Normal → Exaggerated → Absurd", "timing": "throughout" },
+    { "rule": "Every character should have a distinct comedic voice/quirk", "timing": "established by 10%" },
+    { "rule": "Physical comedy beats should escalate within each sequence", "timing": "27-50%, 50-68%" },
+    { "rule": "The finale must pay off ALL running gags and callbacks", "timing": "77-99%" },
+    { "rule": "End on a laugh, not just an emotion", "timing": "99-100%" }
+  ],
+  "plotStructure": {
+    "mainPlot": {
+      "id": "main-comedy",
+      "name": "The Scheme / Deception / Fish-Out-of-Water Situation",
+      "description": "Protagonist pursues their goal through comedy-generating means (deception, disguise, culture clash, etc.)",
+      "thematicFunction": "The external comedy reveals internal truths about the protagonist",
+      "involvedCharacters": []
+    },
+    "subPlots": [
+      {
+        "id": "sub-heart",
+        "name": "Heart Story (Love/Friendship)",
+        "description": "The genuine relationship the protagonist risks losing by maintaining the lie",
+        "thematicFunction": "Provides the emotional stakes that give the comedy meaning",
+        "involvedCharacters": []
+      },
+      {
+        "id": "sub-sidekick",
+        "name": "Sidekick Subplot",
+        "description": "The best friend/sidekick has their own comedic arc that mirrors or contrasts the main plot",
+        "thematicFunction": "Comic relief escalation and contrast to protagonist",
+        "involvedCharacters": []
+      }
+    ],
+    "screenTimeAllocation": {
+      "mainPlot": 55,
+      "subPlots": [30, 15]
+    }
+  },
+  "characterArcTemplate": {
+    "arcType": "positive",
+    "phases": [
+      { "name": "The Faker", "runtimePercentStart": 0, "runtimePercentEnd": 12, "characterState": "Uses charm/deception as a coping mechanism", "internalConflict": "Avoids authenticity because it's scary", "externalManifest": "Funny but superficial relationships" },
+      { "name": "The Schemer", "runtimePercentStart": 12, "runtimePercentEnd": 50, "characterState": "Doubles down on the lie because it's working", "internalConflict": "Growing attachment to B-story person vs. maintaining the scheme", "externalManifest": "Increasingly elaborate deceptions" },
+      { "name": "The Juggler", "runtimePercentStart": 50, "runtimePercentEnd": 68, "characterState": "Desperately trying to keep all plates spinning", "internalConflict": "Knows the truth must come out but can't face it", "externalManifest": "Comedy of errors escalates" },
+      { "name": "The Exposed", "runtimePercentStart": 68, "runtimePercentEnd": 77, "characterState": "All masks stripped away", "internalConflict": "Must face who they really are without the comedy armor", "externalManifest": "Alone, vulnerable, no jokes to hide behind" },
+      { "name": "The Authentic", "runtimePercentStart": 77, "runtimePercentEnd": 100, "characterState": "Acts from genuine self for the first time", "internalConflict": "Fear of rejection while being real", "externalManifest": "Grand gesture that's honest, probably embarrassing, but real" }
+    ]
+  }
+}

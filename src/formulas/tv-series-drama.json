@@ -1,0 +1,295 @@
+{
+  "id": "tv-series-drama-streaming",
+  "name": "TV Series Drama (Streaming Format)",
+  "description": "Multi-episode drama structure for streaming platforms. No ad breaks. 45-65 minute episodes with season arc. Cliffhanger formulas and A/B/C plot weaving.",
+  "genre": "drama",
+  "format": "tv-series",
+  "baseStructure": "streaming-flexible",
+  "totalBeats": 12,
+  "beats": [
+    {
+      "id": "cold-open",
+      "name": "Cold Open / Hook",
+      "description": "Start mid-action or with a provocative scene that hooks the viewer. Can be a flash-forward, a mystery moment, or an action peak. In streaming, this replaces the need for a traditional teaser.",
+      "purpose": "Prevent the viewer from clicking away. You have 30 seconds to hook them.",
+      "runtimePercentStart": 0,
+      "runtimePercentEnd": 5,
+      "durationPercent": 5,
+      "tensionLevel": 7,
+      "emotionalTone": "tense",
+      "requiredElements": [
+        { "type": "action-sequence", "description": "Immediate hook — action, mystery, or provocative moment", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "transitionIn": "cut",
+      "musicMood": "building-tension",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "title-sequence",
+      "name": "Title Sequence / Transition",
+      "description": "Brief title card or opening credits. In streaming, this is often short (15-30 seconds) or skippable.",
+      "purpose": "Brand the show. Establish visual identity.",
+      "runtimePercentStart": 5,
+      "runtimePercentEnd": 6,
+      "durationPercent": 1,
+      "tensionLevel": 3,
+      "emotionalTone": "neutral",
+      "requiredElements": [],
+      "suggestedSceneCount": { "min": 0, "max": 1 },
+      "musicMood": "full-orchestral",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "status-quo-update",
+      "name": "Status Quo Update / Where We Left Off",
+      "description": "Reestablish where each plot thread stands. Remind the viewer of the ongoing conflicts. This is NOT recap — it's the characters dealing with the aftermath of the previous episode.",
+      "purpose": "Orient returning viewers without repeating exposition.",
+      "runtimePercentStart": 6,
+      "runtimePercentEnd": 15,
+      "durationPercent": 9,
+      "tensionLevel": 4,
+      "emotionalTone": "neutral",
+      "requiredElements": [
+        { "type": "dialogue-heavy", "description": "Touch each active plot thread briefly", "mandatory": true },
+        { "type": "character-intro", "description": "For early episodes: introduce new characters", "mandatory": false }
+      ],
+      "suggestedSceneCount": { "min": 2, "max": 4 },
+      "musicMood": "subtle-underscore",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "episode-catalyst",
+      "name": "Episode Catalyst / This Episode's Problem",
+      "description": "A new development that creates this episode's central question. This is on top of the season arc — it's the specific problem of THIS episode.",
+      "purpose": "Give the episode its own identity and question that can be partially resolved.",
+      "runtimePercentStart": 13,
+      "runtimePercentEnd": 20,
+      "durationPercent": 7,
+      "tensionLevel": 6,
+      "emotionalTone": "anxious",
+      "requiredElements": [
+        { "type": "plot-point", "description": "New development that drives this episode's A-plot", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "musicMood": "building-tension",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "rising-action-a",
+      "name": "Rising Action — A Plot",
+      "description": "The A-plot advances. Characters take action on the episode's central problem. Interweaved with B and C plot scenes.",
+      "purpose": "Drive the main story forward. Deepen character relationships.",
+      "runtimePercentStart": 20,
+      "runtimePercentEnd": 40,
+      "durationPercent": 20,
+      "tensionLevel": 6,
+      "emotionalTone": "tense",
+      "requiredElements": [
+        { "type": "confrontation", "description": "A-plot obstacle or conflict escalation", "mandatory": true },
+        { "type": "dialogue-heavy", "description": "Character development through conflict", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 4, "max": 7 },
+      "musicMood": "suspense-pulse",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "b-plot-development",
+      "name": "B-Plot Development / Subplot Deepening",
+      "description": "The B-plot (and C-plot if present) gets significant screen time. These subplots should contrast or mirror the A-plot thematically.",
+      "purpose": "Provide variety, deepen world-building, explore theme from different angles.",
+      "runtimePercentStart": 30,
+      "runtimePercentEnd": 50,
+      "durationPercent": 20,
+      "tensionLevel": 5,
+      "emotionalTone": "varied",
+      "requiredElements": [
+        { "type": "plot-point", "description": "B-plot reaches a turning point", "mandatory": true },
+        { "type": "emotional-peak", "description": "Emotional moment in the B-plot", "mandatory": false }
+      ],
+      "suggestedSceneCount": { "min": 3, "max": 6 },
+      "musicMood": "subtle-underscore",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "midpoint-twist",
+      "name": "Midpoint Twist / Major Revelation",
+      "description": "A significant revelation or reversal at the episode's midpoint. Changes the direction of the A-plot. In serialized dramas, this often connects to the larger season arc.",
+      "purpose": "Re-engage the viewer. Shift the dynamic. Often the episode's most memorable moment.",
+      "runtimePercentStart": 45,
+      "runtimePercentEnd": 52,
+      "durationPercent": 7,
+      "tensionLevel": 8,
+      "emotionalTone": "tense",
+      "requiredElements": [
+        { "type": "revelation", "description": "Major twist or revelation that reframes the episode", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "musicMood": "building-tension",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "complications-convergence",
+      "name": "Complications / Plot Convergence",
+      "description": "A and B plots begin to intersect. Complications from one plot affect the other. Characters face harder choices. The season arc advances.",
+      "purpose": "Weave plotlines together. Raise all stakes simultaneously.",
+      "runtimePercentStart": 52,
+      "runtimePercentEnd": 70,
+      "durationPercent": 18,
+      "tensionLevel": 7,
+      "emotionalTone": "anxious",
+      "requiredElements": [
+        { "type": "confrontation", "description": "Plots collide — action in one affects the other", "mandatory": true },
+        { "type": "emotional-peak", "description": "A character faces a difficult moral choice", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 4, "max": 8 },
+      "musicMood": "suspense-pulse",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "episode-crisis",
+      "name": "Episode Crisis / Low Point",
+      "description": "The episode's darkest moment. The A-plot problem seems unsolvable. A relationship fractures. A plan fails.",
+      "purpose": "Hit the emotional bottom before the episode's resolution.",
+      "runtimePercentStart": 68,
+      "runtimePercentEnd": 75,
+      "durationPercent": 7,
+      "tensionLevel": 8,
+      "emotionalTone": "desperate",
+      "requiredElements": [
+        { "type": "emotional-peak", "description": "Character's lowest point in this episode", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 3 },
+      "musicMood": "melancholic-piano",
+      "pacingSpeed": "slow"
+    },
+    {
+      "id": "episode-climax",
+      "name": "Episode Climax / Partial Resolution",
+      "description": "The episode's A-plot question is answered (or partially answered). This episode's specific problem is resolved, but the season arc advances or complicates.",
+      "purpose": "Satisfy the episode while driving the season forward.",
+      "runtimePercentStart": 75,
+      "runtimePercentEnd": 88,
+      "durationPercent": 13,
+      "tensionLevel": 9,
+      "emotionalTone": "triumphant",
+      "requiredElements": [
+        { "type": "confrontation", "description": "Climactic confrontation resolving this episode's main conflict", "mandatory": true },
+        { "type": "plot-point", "description": "Season arc advances significantly", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 2, "max": 4 },
+      "musicMood": "full-orchestral",
+      "pacingSpeed": "very-fast"
+    },
+    {
+      "id": "fallout-setup",
+      "name": "Fallout / New Status Quo",
+      "description": "Characters deal with the consequences of the climax. New relationships, new dynamics. Seeds planted for the next episode.",
+      "purpose": "Transition to new status quo. Show consequences. Plant next-episode hooks.",
+      "runtimePercentStart": 88,
+      "runtimePercentEnd": 95,
+      "durationPercent": 7,
+      "tensionLevel": 4,
+      "emotionalTone": "bittersweet",
+      "requiredElements": [
+        { "type": "dialogue-heavy", "description": "Characters process what happened", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 2, "max": 3 },
+      "musicMood": "subtle-underscore",
+      "pacingSpeed": "slow"
+    },
+    {
+      "id": "cliffhanger",
+      "name": "Cliffhanger / End Hook",
+      "description": "A final revelation, threat, or question that makes the viewer NEED to watch the next episode. Not every episode needs a cliffhanger, but most should end on a strong hook.",
+      "purpose": "Drive binge-watching. Make the 'Next Episode' button irresistible.",
+      "runtimePercentStart": 95,
+      "runtimePercentEnd": 100,
+      "durationPercent": 5,
+      "tensionLevel": 8,
+      "emotionalTone": "tense",
+      "requiredElements": [
+        { "type": "revelation", "description": "Final hook — new threat, twist, or unanswered question", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 1 },
+      "transitionOut": "fade-to-black",
+      "musicMood": "building-tension",
+      "pacingSpeed": "fast"
+    }
+  ],
+  "pacingProfile": {
+    "overall": "balanced",
+    "tensionCurve": [
+      { "runtimePercent": 0, "tensionLevel": 7, "label": "Cold Open" },
+      { "runtimePercent": 8, "tensionLevel": 3, "label": "Status Quo" },
+      { "runtimePercent": 17, "tensionLevel": 6, "label": "Catalyst" },
+      { "runtimePercent": 30, "tensionLevel": 6, "label": "Rising A" },
+      { "runtimePercent": 40, "tensionLevel": 5, "label": "B-Plot" },
+      { "runtimePercent": 50, "tensionLevel": 8, "label": "Midpoint" },
+      { "runtimePercent": 60, "tensionLevel": 7, "label": "Convergence" },
+      { "runtimePercent": 72, "tensionLevel": 8, "label": "Crisis" },
+      { "runtimePercent": 82, "tensionLevel": 9, "label": "Climax" },
+      { "runtimePercent": 90, "tensionLevel": 4, "label": "Fallout" },
+      { "runtimePercent": 97, "tensionLevel": 8, "label": "Cliffhanger" }
+    ],
+    "sceneLength": {
+      "averageSeconds": 150,
+      "shortScenePercent": 15,
+      "longScenePercent": 20
+    }
+  },
+  "genreRules": [
+    { "rule": "Hook the viewer within 30 seconds — no slow builds for streaming episode openers", "timing": "0-1%" },
+    { "rule": "Weave A/B/C plots: never go more than 8 minutes without switching plot threads", "timing": "throughout" },
+    { "rule": "Screen time allocation: A-plot 50-60%, B-plot 25-35%, C-plot 10-15%", "timing": "throughout" },
+    { "rule": "End every episode on a hook — cliffhanger, revelation, or unresolved tension", "timing": "95-100%" },
+    { "rule": "Season arc checkpoints: major advancement at episodes 1, 3-4, 5-6 (midseason), 8-9, finale", "timing": "season-level" },
+    { "rule": "Character relationships must evolve episode-to-episode — never static", "timing": "throughout" },
+    { "rule": "One 'watercooler moment' per episode — the scene people talk about", "timing": "45-55%" }
+  ],
+  "plotStructure": {
+    "mainPlot": {
+      "id": "season-arc",
+      "name": "Season Arc",
+      "description": "The overarching question/conflict that drives the entire season",
+      "thematicFunction": "The macro-level dramatic question: will the protagonist achieve their season-long goal?",
+      "involvedCharacters": []
+    },
+    "subPlots": [
+      {
+        "id": "episode-a",
+        "name": "Episode A-Plot",
+        "description": "This episode's specific problem/question, connected to but distinct from the season arc",
+        "thematicFunction": "Provides episodic satisfaction while advancing the season",
+        "involvedCharacters": []
+      },
+      {
+        "id": "episode-b",
+        "name": "Episode B-Plot",
+        "description": "Secondary story exploring theme from a different angle or different characters",
+        "thematicFunction": "Thematic counterpoint to the A-plot",
+        "involvedCharacters": []
+      },
+      {
+        "id": "episode-c",
+        "name": "Episode C-Plot (Runner)",
+        "description": "Light subplot providing tonal variety or comic relief",
+        "thematicFunction": "Pacing relief, world-building, or setup for future episodes",
+        "involvedCharacters": []
+      }
+    ],
+    "screenTimeAllocation": {
+      "mainPlot": 55,
+      "subPlots": [25, 15, 5]
+    }
+  },
+  "characterArcTemplate": {
+    "arcType": "positive",
+    "phases": [
+      { "name": "Episode Start State", "runtimePercentStart": 0, "runtimePercentEnd": 15, "characterState": "Carrying forward from previous episode", "internalConflict": "Unresolved tension from last episode", "externalManifest": "Dealing with consequences" },
+      { "name": "New Challenge", "runtimePercentStart": 15, "runtimePercentEnd": 50, "characterState": "Confronting this episode's problem", "internalConflict": "This challenge touches on season-arc weakness", "externalManifest": "Active pursuit with growing obstacles" },
+      { "name": "Crisis Point", "runtimePercentStart": 50, "runtimePercentEnd": 75, "characterState": "Tested to the limit", "internalConflict": "Must make a choice that reveals character", "externalManifest": "Decision point with real consequences" },
+      { "name": "Episode Resolution", "runtimePercentStart": 75, "runtimePercentEnd": 100, "characterState": "Changed incrementally", "internalConflict": "One step closer to (or further from) season-arc transformation", "externalManifest": "New status quo — slightly different person than episode start" }
+    ]
+  }
+}

@@ -1,0 +1,337 @@
+{
+  "id": "three-act-drama",
+  "name": "Three-Act Drama (Save the Cat)",
+  "description": "Classic dramatic structure using Blake Snyder's 15-beat Save the Cat framework. Optimized for emotional storytelling with strong character arcs.",
+  "genre": "drama",
+  "format": "feature-film",
+  "baseStructure": "save-the-cat",
+  "totalBeats": 15,
+  "beats": [
+    {
+      "id": "opening-image",
+      "name": "Opening Image",
+      "description": "Visual thesis — a snapshot of the protagonist's world BEFORE the journey. Sets tone, mood, genre. Should be the thematic opposite of the Final Image.",
+      "purpose": "Establish the 'before' state. The audience's first impression.",
+      "runtimePercentStart": 0,
+      "runtimePercentEnd": 1,
+      "durationPercent": 1,
+      "tensionLevel": 2,
+      "emotionalTone": "neutral",
+      "requiredElements": [
+        { "type": "character-intro", "description": "Show protagonist in their ordinary world", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 1 },
+      "transitionIn": "fade-in",
+      "musicMood": "subtle-underscore",
+      "pacingSpeed": "slow"
+    },
+    {
+      "id": "theme-stated",
+      "name": "Theme Stated",
+      "description": "Someone (usually NOT the protagonist) states the movie's thematic premise. The protagonist doesn't yet understand this truth.",
+      "purpose": "Plant the thematic seed that the entire story will explore.",
+      "runtimePercentStart": 4,
+      "runtimePercentEnd": 6,
+      "durationPercent": 2,
+      "tensionLevel": 2,
+      "emotionalTone": "neutral",
+      "requiredElements": [
+        { "type": "dialogue-heavy", "description": "A supporting character delivers the theme in dialogue", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 1 },
+      "musicMood": "subtle-underscore",
+      "pacingSpeed": "slow"
+    },
+    {
+      "id": "setup",
+      "name": "Set-Up",
+      "description": "Introduce the protagonist, their world, their flaws ('things that need fixing'), and the supporting cast. Plant every character and situation that will pay off later.",
+      "purpose": "The 'before' snapshot. Establish at least 6 things that need fixing.",
+      "runtimePercentStart": 1,
+      "runtimePercentEnd": 9,
+      "durationPercent": 8,
+      "tensionLevel": 2,
+      "emotionalTone": "neutral",
+      "requiredElements": [
+        { "type": "character-intro", "description": "Introduce all major characters and their relationships", "mandatory": true },
+        { "type": "plot-point", "description": "Establish protagonist's flaw and desire", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 3, "max": 6 },
+      "musicMood": "subtle-underscore",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "catalyst",
+      "name": "Catalyst",
+      "description": "The inciting incident. A life-changing event that breaks the status quo. This HAPPENS TO the protagonist — it is NOT their decision.",
+      "purpose": "Disrupt equilibrium. The story can no longer remain as it was.",
+      "runtimePercentStart": 10,
+      "runtimePercentEnd": 12,
+      "durationPercent": 2,
+      "tensionLevel": 5,
+      "emotionalTone": "anxious",
+      "requiredElements": [
+        { "type": "plot-point", "description": "An external event disrupts the protagonist's world", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "musicMood": "building-tension",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "debate",
+      "name": "Debate",
+      "description": "The protagonist hesitates. 'Should I go? Is this wise?' This is the last chance for doubt. The question: 'What would you do?'",
+      "purpose": "Show the stakes and the protagonist's reluctance. Build anticipation.",
+      "runtimePercentStart": 11,
+      "runtimePercentEnd": 23,
+      "durationPercent": 12,
+      "tensionLevel": 4,
+      "emotionalTone": "anxious",
+      "requiredElements": [
+        { "type": "dialogue-heavy", "description": "Protagonist debates the decision with themselves or others", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 2, "max": 4 },
+      "musicMood": "subtle-underscore",
+      "pacingSpeed": "slow"
+    },
+    {
+      "id": "break-into-two",
+      "name": "Break Into Two",
+      "description": "The protagonist makes a PROACTIVE CHOICE to enter Act II. They leave the 'thesis' world and enter the 'antithesis' world.",
+      "purpose": "End of Act I. The protagonist commits. Point of no return.",
+      "runtimePercentStart": 22,
+      "runtimePercentEnd": 25,
+      "durationPercent": 3,
+      "tensionLevel": 6,
+      "emotionalTone": "hopeful",
+      "requiredElements": [
+        { "type": "plot-point", "description": "Protagonist makes an active decision to engage", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "transitionOut": "smash-cut",
+      "musicMood": "building-tension",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "b-story",
+      "name": "B Story",
+      "description": "Introduction of a new character or relationship (often the love interest). This subplot carries the theme and provides a breather.",
+      "purpose": "Explore the theme through a secondary relationship. Counterpoint to A Story.",
+      "runtimePercentStart": 25,
+      "runtimePercentEnd": 30,
+      "durationPercent": 5,
+      "tensionLevel": 3,
+      "emotionalTone": "hopeful",
+      "requiredElements": [
+        { "type": "character-intro", "description": "Introduce B-story character/relationship", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 3 },
+      "musicMood": "romantic-theme",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "fun-and-games",
+      "name": "Fun and Games",
+      "description": "The PROMISE OF THE PREMISE. This is why the audience bought the ticket. The trailer moments. The most entertaining section of the film.",
+      "purpose": "Deliver on the genre promise. Show what makes this story unique and entertaining.",
+      "runtimePercentStart": 27,
+      "runtimePercentEnd": 50,
+      "durationPercent": 23,
+      "tensionLevel": 5,
+      "emotionalTone": "excited",
+      "requiredElements": [
+        { "type": "action-sequence", "description": "Deliver the core entertainment promise", "mandatory": true },
+        { "type": "comic-relief", "description": "Lighter moments within the adventure", "mandatory": false }
+      ],
+      "suggestedSceneCount": { "min": 5, "max": 10 },
+      "musicMood": "action-driving",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "midpoint",
+      "name": "Midpoint",
+      "description": "Either a FALSE VICTORY (things seem great but aren't) or a FALSE DEFEAT (things seem terrible but will improve). Raises the stakes. The clock starts ticking.",
+      "purpose": "Central pivot point. A and B stories cross paths. Stakes escalate permanently.",
+      "runtimePercentStart": 49,
+      "runtimePercentEnd": 52,
+      "durationPercent": 3,
+      "tensionLevel": 7,
+      "emotionalTone": "tense",
+      "requiredElements": [
+        { "type": "revelation", "description": "Major revelation or reversal that changes everything", "mandatory": true },
+        { "type": "plot-point", "description": "Time stakes introduced — clock starts ticking", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "musicMood": "building-tension",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "bad-guys-close-in",
+      "name": "Bad Guys Close In",
+      "description": "Internal dissent within the team. External pressure from the antagonist. Things fall apart. Both literal and metaphorical 'bad guys' close in.",
+      "purpose": "Escalate all conflicts. Strip away the protagonist's advantages. Build toward crisis.",
+      "runtimePercentStart": 50,
+      "runtimePercentEnd": 68,
+      "durationPercent": 18,
+      "tensionLevel": 7,
+      "emotionalTone": "tense",
+      "requiredElements": [
+        { "type": "confrontation", "description": "Antagonist forces close in", "mandatory": true },
+        { "type": "emotional-peak", "description": "Internal team conflicts surface", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 4, "max": 8 },
+      "musicMood": "suspense-pulse",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "all-is-lost",
+      "name": "All Is Lost",
+      "description": "The opposite of the Midpoint. Includes a 'whiff of death' — someone dies, or there's a metaphorical death. The old way must die.",
+      "purpose": "Protagonist's lowest point. Everything they relied on is gone.",
+      "runtimePercentStart": 67,
+      "runtimePercentEnd": 70,
+      "durationPercent": 3,
+      "tensionLevel": 9,
+      "emotionalTone": "desperate",
+      "requiredElements": [
+        { "type": "emotional-peak", "description": "A devastating loss — literal or metaphorical death", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "musicMood": "melancholic-piano",
+      "pacingSpeed": "slow"
+    },
+    {
+      "id": "dark-night-of-soul",
+      "name": "Dark Night of the Soul",
+      "description": "The protagonist's lowest emotional point. Mourning, wallowing, regret. The darkness before the dawn.",
+      "purpose": "The character must process the loss before finding the answer. Emotional bottom.",
+      "runtimePercentStart": 68,
+      "runtimePercentEnd": 77,
+      "durationPercent": 9,
+      "tensionLevel": 3,
+      "emotionalTone": "melancholic",
+      "requiredElements": [
+        { "type": "emotional-peak", "description": "Protagonist processes the loss alone", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 2, "max": 4 },
+      "musicMood": "melancholic-piano",
+      "pacingSpeed": "very-slow"
+    },
+    {
+      "id": "break-into-three",
+      "name": "Break Into Three",
+      "description": "The solution is found. Thanks to the B Story, the protagonist discovers the truth. A and B stories merge. Eureka moment.",
+      "purpose": "The missing piece falls into place. The character understands the theme.",
+      "runtimePercentStart": 76,
+      "runtimePercentEnd": 79,
+      "durationPercent": 3,
+      "tensionLevel": 6,
+      "emotionalTone": "hopeful",
+      "requiredElements": [
+        { "type": "revelation", "description": "Protagonist finds the solution through thematic understanding", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "musicMood": "building-tension",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "finale",
+      "name": "Finale",
+      "description": "The five-point finale: (1) Gather the team, (2) Execute the plan, (3) High tower surprise, (4) Dig deep down, (5) Execute new plan.",
+      "purpose": "Protagonist applies the lesson learned. Confronts the antagonist. Proves they have changed.",
+      "runtimePercentStart": 77,
+      "runtimePercentEnd": 99,
+      "durationPercent": 22,
+      "tensionLevel": 9,
+      "emotionalTone": "triumphant",
+      "requiredElements": [
+        { "type": "confrontation", "description": "Final confrontation with antagonist", "mandatory": true },
+        { "type": "action-sequence", "description": "Climactic action driven by character growth", "mandatory": true },
+        { "type": "emotional-peak", "description": "Protagonist demonstrates transformation", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 5, "max": 10 },
+      "musicMood": "full-orchestral",
+      "pacingSpeed": "very-fast"
+    },
+    {
+      "id": "final-image",
+      "name": "Final Image",
+      "description": "The opposite of the Opening Image. Proof that change has occurred. Visual evidence of the protagonist's arc. The 'after' snapshot.",
+      "purpose": "Mirror the opening. Show how the world and character have changed.",
+      "runtimePercentStart": 99,
+      "runtimePercentEnd": 100,
+      "durationPercent": 1,
+      "tensionLevel": 1,
+      "emotionalTone": "bittersweet",
+      "requiredElements": [
+        { "type": "emotional-peak", "description": "Visual proof of transformation", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 1 },
+      "transitionOut": "fade-to-black",
+      "musicMood": "subtle-underscore",
+      "pacingSpeed": "slow"
+    }
+  ],
+  "pacingProfile": {
+    "overall": "balanced",
+    "tensionCurve": [
+      { "runtimePercent": 0, "tensionLevel": 2, "label": "Opening" },
+      { "runtimePercent": 11, "tensionLevel": 5, "label": "Catalyst" },
+      { "runtimePercent": 25, "tensionLevel": 6, "label": "Break Into Two" },
+      { "runtimePercent": 37, "tensionLevel": 5, "label": "Fun & Games" },
+      { "runtimePercent": 50, "tensionLevel": 7, "label": "Midpoint" },
+      { "runtimePercent": 60, "tensionLevel": 7, "label": "Bad Guys Close In" },
+      { "runtimePercent": 68, "tensionLevel": 9, "label": "All Is Lost" },
+      { "runtimePercent": 75, "tensionLevel": 3, "label": "Dark Night" },
+      { "runtimePercent": 80, "tensionLevel": 6, "label": "Break Into Three" },
+      { "runtimePercent": 92, "tensionLevel": 10, "label": "Climax" },
+      { "runtimePercent": 100, "tensionLevel": 1, "label": "Final Image" }
+    ],
+    "sceneLength": {
+      "averageSeconds": 120,
+      "shortScenePercent": 20,
+      "longScenePercent": 15
+    }
+  },
+  "genreRules": [
+    { "rule": "Every scene must either advance the plot or reveal character (preferably both)", "timing": "throughout" },
+    { "rule": "The All Is Lost moment must include a 'whiff of death'", "timing": "68%" },
+    { "rule": "The B Story carries the theme", "timing": "27-100%" },
+    { "rule": "Opening and Final images must mirror each other thematically", "timing": "0% and 100%" },
+    { "rule": "The Catalyst must happen TO the protagonist, not be their decision", "timing": "11%" },
+    { "rule": "Break Into Two must be a PROACTIVE choice by the protagonist", "timing": "23%" }
+  ],
+  "plotStructure": {
+    "mainPlot": {
+      "id": "main-a",
+      "name": "Main Dramatic Question",
+      "description": "Will the protagonist overcome their flaw and achieve their goal?",
+      "thematicFunction": "External conflict that forces internal growth",
+      "involvedCharacters": []
+    },
+    "subPlots": [
+      {
+        "id": "sub-b",
+        "name": "B Story (Theme Carrier)",
+        "description": "A relationship that explores and embodies the movie's theme",
+        "thematicFunction": "Provides the protagonist with the thematic insight needed for Break Into Three",
+        "involvedCharacters": []
+      }
+    ],
+    "screenTimeAllocation": {
+      "mainPlot": 65,
+      "subPlots": [35]
+    }
+  },
+  "characterArcTemplate": {
+    "arcType": "positive",
+    "phases": [
+      { "name": "Living the Lie", "runtimePercentStart": 0, "runtimePercentEnd": 12, "characterState": "Operates under a false belief", "internalConflict": "Unconscious of their flaw", "externalManifest": "Flawed behavior causes problems they can't see" },
+      { "name": "Questioning", "runtimePercentStart": 12, "runtimePercentEnd": 25, "characterState": "Events force reconsideration", "internalConflict": "Doubt creeps in but fear keeps them clinging to the lie", "externalManifest": "Hesitation, avoidance, seeking comfort" },
+      { "name": "Experimenting", "runtimePercentStart": 25, "runtimePercentEnd": 50, "characterState": "Trying new approaches", "internalConflict": "Torn between old habits and new possibilities", "externalManifest": "Small victories and failures as they test new behavior" },
+      { "name": "Embracing Truth", "runtimePercentStart": 50, "runtimePercentEnd": 68, "characterState": "Beginning to accept the truth", "internalConflict": "Growing conviction tested by escalating pressure", "externalManifest": "Stronger actions, clearer purpose, but consequences mount" },
+      { "name": "Crisis of Faith", "runtimePercentStart": 68, "runtimePercentEnd": 77, "characterState": "Everything collapses", "internalConflict": "The lie seems validated — was the truth wrong?", "externalManifest": "Withdrawal, despair, rejection of growth" },
+      { "name": "Transformation", "runtimePercentStart": 77, "runtimePercentEnd": 100, "characterState": "Fully embraces the truth", "internalConflict": "None — clarity achieved", "externalManifest": "Decisive action driven by authentic self" }
+    ]
+  }
+}

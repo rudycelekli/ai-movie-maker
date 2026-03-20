@@ -1,0 +1,4398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Movie Maker</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a28;
+    --border: #2a2a3a;
+    --text: #e8e8f0;
+    --text2: #9090a8;
+    --accent: #6366f1;
+    --accent2: #818cf8;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --cyan: #22d3ee;
+    --pink: #f472b6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #1a1030 0%, #0a0a1a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent2), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header .tag {
+    font-size: 0.7rem;
+    background: var(--accent);
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  /* ── Layout ── */
+  .app {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    min-height: calc(100vh - 65px);
+  }
+
+  /* ── Sidebar (Input Form) ── */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem;
+    overflow-y: auto;
+    max-height: calc(100vh - 65px);
+  }
+  .sidebar h2 {
+    font-size: 1rem;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+  }
+
+  .field {
+    margin-bottom: 1rem;
+  }
+  .field-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.3rem;
+  }
+  .field label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text2);
+    font-weight: 500;
+  }
+  .field-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .field-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    transition: all 0.15s;
+    opacity: 0.4;
+    color: var(--text2);
+  }
+  .field-actions button:hover {
+    opacity: 1;
+  }
+  .field-actions .ai-btn:hover {
+    color: var(--accent2);
+    background: rgba(99, 102, 241, 0.1);
+  }
+  .field-actions .ai-btn.loading {
+    animation: spin 0.8s linear infinite;
+  }
+  .field-actions .lock-toggle {
+    font-size: 0.7rem;
+  }
+  .field-actions .lock-toggle.locked {
+    opacity: 1;
+    color: var(--yellow);
+  }
+
+  /* Locked field visual */
+  .field.locked input,
+  .field.locked select,
+  .field.locked textarea {
+    border-color: rgba(251, 191, 36, 0.3);
+    background: rgba(251, 191, 36, 0.03);
+  }
+  .field.locked .field-label label {
+    color: var(--yellow);
+  }
+  .format-section.locked .format-grid {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  .format-section.locked .section-label label {
+    color: var(--yellow);
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 0.9rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--accent);
+  }
+  .field textarea {
+    resize: vertical;
+    min-height: 70px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+
+  /* Kid mode toggle */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+  .toggle {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+  }
+  .toggle input { display: none; }
+  .toggle .slider {
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    border-radius: 12px;
+    transition: 0.2s;
+  }
+  .toggle .slider::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: 0.2s;
+  }
+  .toggle input:checked + .slider {
+    background: var(--green);
+  }
+  .toggle input:checked + .slider::after {
+    transform: translateX(20px);
+  }
+  .toggle-label {
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+
+  .kid-options {
+    display: none;
+    margin-bottom: 1rem;
+  }
+  .kid-options.visible {
+    display: block;
+  }
+
+  /* Generate button */
+  .generate-btn {
+    width: 100%;
+    padding: 0.9rem;
+    background: linear-gradient(135deg, var(--accent), #4f46e5);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .generate-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  }
+  .generate-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .generate-btn.loading {
+    color: transparent;
+  }
+  .generate-btn .spinner {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .generate-btn.loading .spinner {
+    display: block;
+  }
+  @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+  /* ── Main Content (Results) ── */
+  .main {
+    padding: 2rem;
+    overflow-y: auto;
+    max-height: calc(100vh - 65px);
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    color: var(--text2);
+    text-align: center;
+  }
+  .empty-state .icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+  }
+  .empty-state p {
+    font-size: 1.1rem;
+    max-width: 400px;
+  }
+
+  /* Phase progress bar */
+  .progress-bar {
+    display: none;
+    margin-bottom: 2rem;
+  }
+  .progress-bar.visible {
+    display: block;
+  }
+  .progress-steps {
+    display: flex;
+    gap: 0;
+  }
+  .progress-step {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    font-size: 0.7rem;
+    color: var(--text2);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    position: relative;
+  }
+  .progress-step:first-child { border-radius: 8px 0 0 8px; }
+  .progress-step:last-child { border-radius: 0 8px 8px 0; }
+  .progress-step.done {
+    background: rgba(52, 211, 153, 0.15);
+    color: var(--green);
+    border-color: rgba(52, 211, 153, 0.3);
+  }
+  .progress-step.active {
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--accent2);
+    border-color: var(--accent);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  /* Result sections */
+  .result-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-header {
+    padding: 1rem 1.2rem;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .result-header:hover {
+    background: rgba(99, 102, 241, 0.05);
+  }
+  .result-header .emoji {
+    font-size: 1.2rem;
+  }
+  .result-header h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    flex: 1;
+  }
+  .result-header .count {
+    font-size: 0.75rem;
+    color: var(--text2);
+    background: var(--surface);
+    padding: 0.15rem 0.6rem;
+    border-radius: 10px;
+  }
+  .result-header .chevron {
+    color: var(--text2);
+    transition: transform 0.2s;
+  }
+  .result-section.collapsed .result-body { display: none; }
+  .result-section.collapsed .chevron { transform: rotate(-90deg); }
+
+  .result-body {
+    padding: 1.2rem;
+  }
+
+  /* Concept card */
+  .concept-logline {
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--yellow);
+    margin-bottom: 1rem;
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .concept-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+  .meta-item {
+    background: var(--surface2);
+    padding: 0.7rem;
+    border-radius: 8px;
+  }
+  .meta-item .label {
+    font-size: 0.7rem;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.2rem;
+  }
+  .meta-item .value {
+    font-size: 0.85rem;
+  }
+  .synopsis {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--text2);
+    white-space: pre-line;
+  }
+
+  /* Milestone cards */
+  .milestone-card {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+    border-left: 3px solid var(--accent);
+  }
+  .milestone-card .beat-id {
+    font-size: 0.7rem;
+    color: var(--accent2);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+  .milestone-card h4 {
+    font-size: 0.95rem;
+    margin-bottom: 0.3rem;
+  }
+  .milestone-card p {
+    font-size: 0.85rem;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+  .milestone-card .meta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text2);
+  }
+  .milestone-card .meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  /* Character cards */
+  .character-card {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+  }
+  .character-card .char-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+  .character-card .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--pink));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: white;
+    flex-shrink: 0;
+  }
+  .character-card h4 { font-size: 0.95rem; }
+  .character-card .role {
+    font-size: 0.75rem;
+    color: var(--cyan);
+  }
+  .character-card .personality {
+    font-size: 0.85rem;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+  }
+  .char-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    color: var(--text2);
+  }
+  .char-details span { display: flex; gap: 0.3rem; }
+  .char-details .lbl { color: var(--text2); opacity: 0.6; }
+
+  /* Location cards */
+  .location-card {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+  }
+  .location-card h4 {
+    font-size: 0.95rem;
+    margin-bottom: 0.2rem;
+  }
+  .location-card .type {
+    font-size: 0.75rem;
+    color: var(--green);
+    margin-bottom: 0.5rem;
+  }
+  .location-card p {
+    font-size: 0.85rem;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+  }
+  .color-swatches {
+    display: flex;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+  }
+  .swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  /* Scene cards */
+  .scene-card {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+  }
+  .scene-card .slugline {
+    font-size: 0.75rem;
+    color: var(--yellow);
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  .scene-card h4 {
+    font-size: 0.95rem;
+    margin-bottom: 0.3rem;
+  }
+  .scene-card .desc {
+    font-size: 0.85rem;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+  }
+  .dialogue-preview {
+    background: var(--bg);
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.8rem;
+    font-family: 'Courier New', monospace;
+    margin-top: 0.5rem;
+  }
+  .dialogue-preview .char-name {
+    color: var(--accent2);
+    font-weight: 700;
+  }
+  .dialogue-preview .line-text {
+    color: var(--text);
+  }
+  .dialogue-preview .parenthetical {
+    color: var(--text2);
+    font-style: italic;
+  }
+
+  /* Shot cards */
+  .shot-card {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.6rem;
+    border-left: 2px solid var(--cyan);
+  }
+  .shot-card .shot-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .shot-card .duration {
+    font-size: 0.7rem;
+    background: var(--bg);
+    color: var(--cyan);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .shot-card .camera-info {
+    font-size: 0.7rem;
+    color: var(--text2);
+  }
+  .frame-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    margin-top: 0.5rem;
+  }
+  .frame-box {
+    background: var(--bg);
+    border-radius: 6px;
+    padding: 0.7rem;
+  }
+  .frame-box .frame-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+  }
+  .frame-box.first .frame-label { color: var(--green); }
+  .frame-box.last .frame-label { color: var(--red); }
+  .frame-box .frame-desc {
+    font-size: 0.78rem;
+    color: var(--text2);
+    line-height: 1.4;
+  }
+
+  /* Error */
+  .error-banner {
+    display: none;
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.5rem;
+    color: var(--red);
+  }
+  .error-banner.visible { display: block; }
+
+  /* Timer */
+  .timer {
+    display: none;
+    font-size: 0.8rem;
+    color: var(--text2);
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  .timer.visible { display: block; }
+
+  /* Format grid */
+  .format-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+  .format-card {
+    padding: 0.6rem 0.4rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .format-card:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+  .format-card.active {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: var(--accent);
+    color: var(--accent2);
+  }
+  .fmt-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .fmt-dur {
+    font-size: 0.65rem;
+    opacity: 0.6;
+    margin-top: 0.15rem;
+  }
+
+  /* Plan preview */
+  .plan-preview {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.7rem 0.9rem;
+    margin-bottom: 1rem;
+  }
+  .plan-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    padding: 0.2rem 0;
+    color: var(--text2);
+  }
+  .plan-row span:last-child {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* (lock + AI buttons are now in .field-actions above) */
+
+  .randomize-all-btn {
+    width: 100%;
+    padding: 0.6rem;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(251, 191, 36, 0.05));
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 8px;
+    color: var(--yellow);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .randomize-all-btn:hover {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(251, 191, 36, 0.1));
+    border-color: var(--yellow);
+  }
+  .randomize-all-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .randomize-all-btn .spinner-sm {
+    display: none;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    border-top-color: var(--yellow);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .randomize-all-btn.loading .spinner-sm { display: inline-block; }
+  .randomize-all-btn.loading .dice-icon { display: none; }
+
+  /* AI prompt bar */
+  .ai-prompt-bar {
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 0.4rem;
+    margin-bottom: 0.8rem;
+    gap: 0.4rem;
+    align-items: center;
+    animation: slideIn 0.2s ease;
+  }
+  .ai-prompt-bar.visible {
+    display: flex;
+  }
+  .ai-prompt-bar .prompt-label {
+    font-size: 0.7rem;
+    color: var(--accent2);
+    white-space: nowrap;
+    padding: 0 0.3rem;
+    font-weight: 600;
+  }
+  .ai-prompt-bar input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+    outline: none;
+    font-family: inherit;
+  }
+  .ai-prompt-bar input:focus {
+    border-color: var(--accent);
+  }
+  .ai-prompt-bar button {
+    padding: 0.35rem 0.7rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: inherit;
+  }
+  .ai-prompt-bar button:first-of-type {
+    background: var(--accent);
+    color: white;
+  }
+  .ai-prompt-bar button:first-of-type:hover {
+    background: var(--accent2);
+  }
+  .ai-prompt-bar button.cancel {
+    background: transparent;
+    color: var(--text2);
+    padding: 0.35rem 0.5rem;
+  }
+  .ai-prompt-bar button.cancel:hover {
+    color: var(--red);
+  }
+
+  /* Result section controls */
+  .result-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-left: auto;
+    margin-right: 0.5rem;
+  }
+  .result-ai-btn, .result-lock-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    transition: all 0.15s;
+    opacity: 0.5;
+    color: var(--text2);
+  }
+  .result-ai-btn:hover { opacity: 1; color: var(--accent2); background: rgba(99,102,241,0.1); }
+  .result-lock-btn.locked { opacity: 1; color: var(--yellow); }
+  .result-lock-btn:hover { opacity: 1; }
+  .result-section.unlocked { border-color: rgba(99,102,241,0.3); }
+
+  /* Result AI bar */
+  .result-ai-bar {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    gap: 0.4rem;
+    align-items: center;
+    animation: slideIn 0.2s ease;
+  }
+  .result-ai-bar.visible { display: flex; }
+  .result-ai-bar .prompt-label {
+    font-size: 0.75rem; color: var(--accent2); white-space: nowrap;
+    padding: 0 0.3rem; font-weight: 600;
+  }
+  .result-ai-bar input {
+    flex: 1; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text); font-size: 0.8rem;
+    padding: 0.4rem 0.6rem; outline: none; font-family: inherit;
+  }
+  .result-ai-bar input:focus { border-color: var(--accent); }
+  .result-ai-bar button {
+    padding: 0.35rem 0.7rem; border: none; border-radius: 6px;
+    font-size: 0.8rem; cursor: pointer; font-weight: 600; font-family: inherit;
+  }
+  .result-ai-bar .go-btn { background: var(--accent); color: white; }
+  .result-ai-bar .go-btn:hover { background: var(--accent2); }
+  .result-ai-bar .cancel-btn { background: transparent; color: var(--text2); }
+  .result-ai-bar .cancel-btn:hover { color: var(--red); }
+
+  /* Approve bar */
+  .approve-bar {
+    display: flex; gap: 0.8rem; margin-top: 1.5rem; padding: 1rem;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  }
+  .approve-btn {
+    flex: 1; padding: 1rem;
+    background: linear-gradient(135deg, var(--green), #059669);
+    border: none; border-radius: 10px; color: white;
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    transition: all 0.2s; font-family: inherit;
+  }
+  .approve-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(52,211,153,0.4); }
+  .regenerate-all-btn {
+    padding: 1rem 1.5rem;
+    background: rgba(99,102,241,0.1); border: 1px solid var(--accent);
+    border-radius: 10px; color: var(--accent2);
+    font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; font-family: inherit;
+  }
+  .regenerate-all-btn:hover { background: rgba(99,102,241,0.2); }
+  .approve-bar.streaming-disabled { opacity: 0.5; }
+  .approve-bar.streaming-disabled button { cursor: not-allowed; pointer-events: none; }
+  .approve-btn:disabled { background: linear-gradient(135deg, #374151, #4b5563); transform: none; box-shadow: none; }
+  .regenerate-all-btn:disabled { opacity: 0.5; }
+
+  /* Timeline view */
+  .timeline-view { display: none; }
+  .timeline-view.visible { display: block; }
+  .timeline-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;
+  }
+  .timeline-header h2 { font-size: 1.2rem; font-weight: 700; }
+  .timeline-header .back-btn {
+    padding: 0.4rem 0.8rem; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text2); cursor: pointer; font-size: 0.8rem; font-family: inherit;
+  }
+  .timeline-header .back-btn:hover { color: var(--text); border-color: var(--accent); }
+  .timeline-summary { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .timeline-stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.8rem;
+  }
+  .timeline-stat .stat-val { font-weight: 700; color: var(--accent2); }
+  .timeline-scenes { display: flex; flex-direction: column; gap: 2rem; }
+  .timeline-scene-group {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+  }
+  .timeline-scene-header {
+    padding: 0.8rem 1rem; background: var(--surface2); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .timeline-scene-header .scene-num {
+    background: var(--accent); color: white; padding: 0.15rem 0.5rem;
+    border-radius: 4px; font-size: 0.7rem; font-weight: 700;
+  }
+  .timeline-scene-header h4 { font-size: 0.9rem; flex: 1; }
+  .timeline-scene-header .scene-dur { font-size: 0.75rem; color: var(--text2); }
+  .timeline-track {
+    display: flex; overflow-x: auto; padding: 1rem; gap: 0.8rem;
+  }
+  .timeline-track::-webkit-scrollbar { height: 6px; }
+  .timeline-track::-webkit-scrollbar-track { background: var(--bg); border-radius: 3px; }
+  .timeline-track::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .timeline-shot {
+    min-width: 280px; max-width: 280px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 10px; overflow: hidden; flex-shrink: 0;
+  }
+  .timeline-shot-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.5rem 0.7rem; background: var(--surface2); border-bottom: 1px solid var(--border);
+  }
+  .timeline-shot-header .shot-num { font-size: 0.75rem; font-weight: 700; color: var(--cyan); }
+  .timeline-shot-header .shot-dur {
+    font-size: 0.7rem; color: var(--text2); background: var(--bg);
+    padding: 0.1rem 0.4rem; border-radius: 4px;
+  }
+  .timeline-shot-header .shot-camera { font-size: 0.65rem; color: var(--text2); }
+  .timeline-frames { display: grid; grid-template-columns: 1fr 1fr; }
+  .timeline-frame { padding: 0.6rem; }
+  .timeline-frame:first-child { border-right: 1px solid var(--border); }
+  .timeline-frame .frame-label {
+    font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em;
+    font-weight: 700; margin-bottom: 0.3rem;
+  }
+  .timeline-frame.first .frame-label { color: var(--green); }
+  .timeline-frame.last .frame-label { color: var(--red); }
+  .timeline-frame .frame-img-placeholder {
+    width: 100%; aspect-ratio: 16/9; background: var(--surface2);
+    border: 1px dashed var(--border); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; opacity: 0.3; margin-bottom: 0.4rem;
+  }
+  .timeline-frame .frame-prompt {
+    font-size: 0.68rem; color: var(--text2); line-height: 1.4;
+    max-height: 60px; overflow-y: auto;
+  }
+  .timeline-shot-actions {
+    padding: 0.5rem 0.7rem; border-top: 1px solid var(--border); display: flex; gap: 0.4rem;
+  }
+  .shot-gen-btn {
+    flex: 1; padding: 0.4rem;
+    background: linear-gradient(135deg, var(--accent), #4f46e5);
+    border: none; border-radius: 6px; color: white;
+    font-size: 0.75rem; font-weight: 600; cursor: pointer; font-family: inherit;
+    transition: all 0.15s;
+  }
+  .shot-gen-btn:hover { box-shadow: 0 2px 10px rgba(99,102,241,0.3); }
+  .generate-all-images-btn {
+    width: 100%; padding: 0.8rem;
+    background: linear-gradient(135deg, var(--accent), #4f46e5);
+    border: none; border-radius: 10px; color: white;
+    font-size: 0.95rem; font-weight: 700; cursor: pointer;
+    margin-bottom: 1.5rem; font-family: inherit; transition: all 0.2s;
+  }
+  .generate-all-images-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
+
+  /* Final Cut Preview */
+  .final-cut-section {
+    margin-top: 2rem; padding: 1.5rem; background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border); border-radius: 12px;
+  }
+  .final-cut-section h3 {
+    margin: 0 0 1rem; font-size: 1.1rem; color: var(--text);
+  }
+  .final-cut-player {
+    position: relative; width: 100%; background: #000; border-radius: 8px; overflow: hidden;
+    aspect-ratio: 16/9; margin-bottom: 1rem;
+  }
+  .final-cut-player video {
+    width: 100%; height: 100%; object-fit: contain; display: block;
+  }
+  .final-cut-playlist {
+    display: flex; gap: 0.4rem; overflow-x: auto; padding: 0.5rem 0;
+  }
+  .final-cut-thumb {
+    flex-shrink: 0; width: 80px; padding: 0.3rem; border-radius: 6px;
+    background: rgba(255,255,255,0.05); border: 2px solid transparent;
+    cursor: pointer; text-align: center; font-size: 0.6rem; color: var(--text2);
+    transition: border-color 0.2s;
+  }
+  .final-cut-thumb.active { border-color: var(--accent); }
+  .final-cut-thumb img { width: 100%; border-radius: 4px; margin-bottom: 0.2rem; }
+  .final-cut-actions {
+    display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;
+  }
+  .final-cut-btn {
+    padding: 0.6rem 1.2rem; border: none; border-radius: 8px; color: white;
+    font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit;
+    transition: all 0.2s;
+  }
+  .final-cut-btn:hover { transform: translateY(-1px); }
+  .final-cut-btn.play { background: linear-gradient(135deg, #10b981, #059669); }
+  .final-cut-btn.download-all { background: linear-gradient(135deg, var(--accent), #4f46e5); }
+  .final-cut-btn.download-stitch { background: linear-gradient(135deg, var(--pink), #e11d48); }
+  .final-cut-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .final-cut-progress {
+    margin-top: 0.5rem; font-size: 0.75rem; color: var(--text2); min-height: 1.2rem;
+  }
+  .shot-download-btn {
+    padding: 0.3rem 0.6rem; background: rgba(255,255,255,0.1); border: 1px solid var(--border);
+    border-radius: 5px; color: var(--text2); font-size: 0.65rem; cursor: pointer;
+    font-family: inherit; transition: all 0.15s;
+  }
+  .shot-download-btn:hover { background: rgba(255,255,255,0.2); color: var(--text); }
+
+  /* Pre-Production view */
+  .preproduction-view { display: none; }
+  .preproduction-view.visible { display: block; }
+  .preproduction-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;
+  }
+  .preproduction-header h2 { font-size: 1.2rem; font-weight: 700; }
+  .preproduction-header .back-btn {
+    padding: 0.4rem 0.8rem; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text2); cursor: pointer; font-size: 0.8rem; font-family: inherit;
+  }
+  .preproduction-header .back-btn:hover { color: var(--text); border-color: var(--accent); }
+
+  .pp-tabs {
+    display: flex; gap: 0; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border);
+  }
+  .pp-tab {
+    padding: 0.6rem 1.2rem; cursor: pointer; font-size: 0.85rem; font-weight: 600;
+    color: var(--text2); background: none; border: none; font-family: inherit;
+    border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s;
+  }
+  .pp-tab:hover { color: var(--text); }
+  .tab-loading-dot {
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--yellow); margin-left: 4px; vertical-align: middle;
+    animation: tab-pulse 1s ease-in-out infinite;
+  }
+  @keyframes tab-pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+  .pp-tab.active { color: var(--accent2); border-bottom-color: var(--accent); }
+
+  .pp-panel { display: none; }
+  .pp-panel.active { display: block; }
+
+  /* Character Sheet */
+  .pp-char-sheet {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.2rem; margin-bottom: 1rem;
+  }
+  .pp-char-sheet .char-top { display: flex; gap: 1rem; margin-bottom: 1rem; }
+  .pp-char-sheet .char-portrait {
+    width: 120px; height: 160px; background: var(--surface2); border: 2px dashed var(--border);
+    border-radius: 8px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; flex-shrink: 0; gap: 0.3rem;
+  }
+  .pp-char-sheet .char-portrait .placeholder-icon { font-size: 2rem; opacity: 0.3; }
+  .pp-char-sheet .char-portrait .gen-ref-btn {
+    padding: 0.2rem 0.5rem; background: var(--accent); color: white; border: none;
+    border-radius: 4px; font-size: 0.65rem; cursor: pointer; font-family: inherit;
+  }
+  .pp-char-sheet .char-portrait .gen-ref-btn:hover { background: var(--accent2); }
+  .pp-char-info { flex: 1; }
+  .pp-char-info h3 { font-size: 1rem; margin-bottom: 0.3rem; }
+  .pp-char-info .role-tag {
+    font-size: 0.7rem; color: var(--cyan); margin-bottom: 0.5rem;
+  }
+  .pp-appearance-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.4rem;
+    font-size: 0.78rem; color: var(--text2);
+  }
+  .pp-appearance-grid .pp-attr {
+    background: var(--surface2); padding: 0.3rem 0.5rem; border-radius: 4px;
+  }
+  .pp-appearance-grid .pp-attr .lbl { font-size: 0.6rem; color: var(--text2); opacity: 0.6; text-transform: uppercase; }
+  .pp-outfit-summary {
+    background: var(--surface2); padding: 0.6rem; border-radius: 6px; margin-top: 0.6rem;
+    font-size: 0.8rem; color: var(--text2);
+  }
+  .pp-outfit-summary h4 { font-size: 0.78rem; color: var(--text); margin-bottom: 0.3rem; }
+  .pp-accessories-list {
+    display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem;
+  }
+  .pp-accessory-chip {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+    padding: 0.2rem 0.5rem; font-size: 0.7rem; color: var(--text2);
+  }
+  .pp-asset-actions {
+    display: flex; gap: 0.4rem; margin-top: 0.6rem;
+  }
+  .pp-asset-actions button {
+    padding: 0.3rem 0.7rem; border-radius: 5px; font-size: 0.72rem;
+    font-weight: 600; cursor: pointer; font-family: inherit; border: none; transition: all 0.15s;
+  }
+  .pp-accept-btn { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3) !important; }
+  .pp-accept-btn:hover { background: rgba(52,211,153,0.25); }
+  .pp-accept-btn.accepted { background: var(--green); color: white; }
+  .pp-reject-btn { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.3) !important; }
+  .pp-reject-btn:hover { background: rgba(248,113,113,0.2); }
+  .pp-regen-btn { background: rgba(99,102,241,0.1); color: var(--accent2); border: 1px solid rgba(99,102,241,0.3) !important; }
+  .pp-regen-btn:hover { background: rgba(99,102,241,0.2); }
+
+  /* Wardrobe matrix */
+  .wardrobe-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+  .wardrobe-table th {
+    background: var(--surface2); padding: 0.5rem; text-align: left;
+    font-size: 0.7rem; color: var(--text2); text-transform: uppercase;
+    letter-spacing: 0.03em; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0;
+  }
+  .wardrobe-table td {
+    padding: 0.5rem; border-bottom: 1px solid var(--border); vertical-align: top;
+  }
+  .wardrobe-cell {
+    background: var(--surface2); border-radius: 6px; padding: 0.5rem; min-width: 140px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .wardrobe-cell:hover { border-color: var(--accent); background: rgba(99,102,241,0.05); }
+  .wardrobe-cell .outfit-name { font-weight: 600; font-size: 0.75rem; color: var(--text); margin-bottom: 0.2rem; }
+  .wardrobe-cell .outfit-thumb {
+    width: 100%; aspect-ratio: 1; background: var(--bg); border: 1px dashed var(--border);
+    border-radius: 4px; display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; opacity: 0.3; margin-bottom: 0.3rem;
+  }
+  .wardrobe-cell .outfit-desc { font-size: 0.68rem; color: var(--text2); line-height: 1.3; }
+
+  /* Location sheets */
+  .pp-location-sheet {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.2rem; margin-bottom: 1rem;
+  }
+  .pp-location-sheet .loc-top { display: flex; gap: 1rem; margin-bottom: 0.8rem; }
+  .pp-location-sheet .loc-preview {
+    width: 200px; height: 120px; background: var(--surface2); border: 2px dashed var(--border);
+    border-radius: 8px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; flex-shrink: 0; gap: 0.3rem;
+  }
+  .pp-location-sheet .loc-preview .placeholder-icon { font-size: 2rem; opacity: 0.3; }
+  .pp-location-sheet .loc-preview .gen-bg-btn {
+    padding: 0.2rem 0.5rem; background: var(--accent); color: white; border: none;
+    border-radius: 4px; font-size: 0.65rem; cursor: pointer; font-family: inherit;
+  }
+  .pp-location-sheet .loc-preview .gen-bg-btn:hover { background: var(--accent2); }
+  .pp-location-sheet .loc-info { flex: 1; }
+  .pp-location-sheet .loc-info h3 { font-size: 1rem; margin-bottom: 0.2rem; }
+  .pp-location-sheet .loc-meta {
+    display: flex; gap: 0.6rem; font-size: 0.75rem; color: var(--text2); margin-bottom: 0.5rem; flex-wrap: wrap;
+  }
+  .pp-location-sheet .loc-meta span { background: var(--surface2); padding: 0.15rem 0.4rem; border-radius: 3px; }
+  .pp-location-sheet .loc-desc { font-size: 0.85rem; color: var(--text2); line-height: 1.5; }
+  .pp-location-sheet .loc-scenes {
+    margin-top: 0.5rem; font-size: 0.75rem; color: var(--text2);
+  }
+
+  /* Scene breakdown */
+  .pp-scene-breakdown {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.2rem; margin-bottom: 1rem;
+  }
+  .pp-scene-breakdown h3 { font-size: 0.95rem; margin-bottom: 0.5rem; }
+  .pp-scene-breakdown .slugline-tag {
+    font-size: 0.7rem; color: var(--yellow); font-family: monospace; font-weight: 700; margin-bottom: 0.5rem;
+  }
+  .pp-scene-breakdown .breakdown-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 0.6rem;
+  }
+  .pp-scene-breakdown .bd-col {
+    background: var(--surface2); border-radius: 6px; padding: 0.6rem;
+  }
+  .pp-scene-breakdown .bd-col h4 {
+    font-size: 0.7rem; color: var(--text2); text-transform: uppercase;
+    letter-spacing: 0.03em; margin-bottom: 0.3rem;
+  }
+  .pp-scene-breakdown .bd-col p { font-size: 0.8rem; color: var(--text); line-height: 1.4; }
+  .pp-continuity-note {
+    background: rgba(251,191,36,0.05); border: 1px solid rgba(251,191,36,0.2);
+    border-radius: 6px; padding: 0.5rem; font-size: 0.78rem; color: var(--yellow);
+  }
+  .pp-signoff {
+    display: flex; align-items: center; gap: 0.5rem; margin-top: 0.6rem;
+    font-size: 0.8rem; color: var(--text2);
+  }
+  .pp-signoff input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--green); cursor: pointer; }
+  .pp-signoff.signed-off { color: var(--green); }
+
+  /* Proceed button */
+  .pp-proceed-bar {
+    display: flex; gap: 0.8rem; margin-top: 1.5rem; padding: 1rem;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  }
+  .pp-back-btn {
+    padding: 1rem 1.5rem; background: rgba(99,102,241,0.1); border: 1px solid var(--accent);
+    border-radius: 10px; color: var(--accent2); font-size: 0.9rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; font-family: inherit;
+  }
+  .pp-back-btn:hover { background: rgba(99,102,241,0.2); }
+  .pp-proceed-btn {
+    flex: 1; padding: 1rem; background: linear-gradient(135deg, var(--green), #059669);
+    border: none; border-radius: 10px; color: white; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; font-family: inherit;
+  }
+  .pp-proceed-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(52,211,153,0.4); }
+  .pp-proceed-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .pp-loading {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 3rem; color: var(--text2); gap: 1rem;
+  }
+  .pp-loading .spinner-lg {
+    width: 32px; height: 32px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  /* Item-level controls */
+  .item-card { position: relative; }
+  .item-toolbar {
+    display: flex; gap: 0.15rem; position: absolute; top: 0.4rem; right: 0.4rem;
+    opacity: 0; transition: opacity 0.15s; z-index: 1;
+  }
+  .item-card:hover .item-toolbar, .item-card.item-locked .item-toolbar { opacity: 1; }
+  .item-toolbar button {
+    background: var(--bg); border: 1px solid var(--border); color: var(--text2);
+    font-size: 0.6rem; padding: 0.12rem 0.25rem; border-radius: 3px;
+    cursor: pointer; transition: all 0.1s; line-height: 1;
+  }
+  .item-toolbar button:hover { color: var(--text); border-color: var(--accent); }
+  .item-toolbar .it-lock.locked { color: var(--yellow); border-color: rgba(251,191,36,0.4); }
+  .item-toolbar .it-del:hover { color: var(--red); border-color: rgba(248,113,113,0.4); }
+  .item-card.item-locked { opacity: 0.65; border-left-color: var(--yellow) !important; }
+  .item-edit-form {
+    display: none; flex-direction: column; gap: 0.4rem; padding: 0.3rem 0;
+  }
+  .item-edit-form.visible { display: flex; }
+  .item-card.editing .item-view { display: none; }
+  .item-card.editing .item-edit-form { display: flex; }
+  .ef-row { display: flex; flex-direction: column; gap: 0.15rem; }
+  .ef-label { font-size: 0.6rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.03em; }
+  .item-edit-form input, .item-edit-form textarea, .item-edit-form select {
+    width: 100%; padding: 0.35rem 0.5rem; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 5px; color: var(--text);
+    font-size: 0.78rem; font-family: inherit; outline: none;
+  }
+  .item-edit-form input:focus, .item-edit-form textarea:focus { border-color: var(--accent); }
+  .item-edit-form textarea { resize: vertical; min-height: 45px; }
+  .edit-actions { display: flex; gap: 0.3rem; justify-content: flex-end; margin-top: 0.2rem; }
+  .edit-actions button {
+    padding: 0.25rem 0.6rem; border-radius: 5px; font-size: 0.72rem;
+    font-weight: 600; cursor: pointer; font-family: inherit; border: none;
+  }
+  .save-edit-btn { background: var(--accent); color: white; }
+  .save-edit-btn:hover { background: var(--accent2); }
+  .cancel-edit-btn { background: transparent; color: var(--text2); border: 1px solid var(--border) !important; }
+  .add-item-btn {
+    width: 100%; padding: 0.45rem; background: transparent;
+    border: 1px dashed var(--border); border-radius: 8px; color: var(--text2);
+    font-size: 0.78rem; cursor: pointer; transition: all 0.15s;
+    margin-top: 0.5rem; font-family: inherit;
+  }
+  .add-item-btn:hover { color: var(--accent2); border-color: var(--accent); background: rgba(99,102,241,0.05); }
+
+  /* Pre-production item controls */
+  .pp-item-card { position: relative; }
+  .pp-item-toolbar {
+    display: flex; gap: 0.2rem; position: absolute; top: 0.4rem; right: 0.4rem;
+    opacity: 0; transition: opacity 0.15s; z-index: 2;
+  }
+  .pp-item-card:hover .pp-item-toolbar, .pp-item-card.pp-locked .pp-item-toolbar { opacity: 1; }
+  .pp-item-toolbar button {
+    background: var(--bg); border: 1px solid var(--border); color: var(--text2);
+    font-size: 0.6rem; padding: 0.12rem 0.25rem; border-radius: 3px;
+    cursor: pointer; transition: all 0.1s; line-height: 1;
+  }
+  .pp-item-toolbar button:hover { color: var(--text); border-color: var(--accent); }
+  .pp-item-toolbar .pp-lock-btn.locked { color: var(--yellow); border-color: rgba(251,191,36,0.4); }
+  .pp-item-card.pp-locked { opacity: 0.65; border-left: 3px solid var(--yellow) !important; }
+  .pp-item-card.pp-editing .pp-item-view { display: none; }
+  .pp-item-card.pp-editing .pp-edit-form { display: flex; }
+  .pp-edit-form {
+    display: none; flex-direction: column; gap: 0.4rem; padding: 0.3rem 0;
+  }
+  .pp-edit-form input, .pp-edit-form textarea, .pp-edit-form select {
+    width: 100%; padding: 0.35rem 0.5rem; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 5px; color: var(--text);
+    font-size: 0.78rem; font-family: inherit; outline: none;
+  }
+  .pp-edit-form input:focus, .pp-edit-form textarea:focus { border-color: var(--accent); }
+  .pp-edit-form textarea { resize: vertical; min-height: 45px; }
+  .pp-upload-ref-btn {
+    background: rgba(34,211,238,0.1); border: 1px dashed var(--cyan); color: var(--cyan);
+    font-size: 0.68rem; padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer;
+    transition: all 0.15s; font-family: inherit;
+  }
+  .pp-upload-ref-btn:hover { background: rgba(34,211,238,0.2); }
+  .pp-upload-ref-btn.has-ref { border-style: solid; background: rgba(34,211,238,0.15); }
+  .pp-ref-thumb {
+    width: 40px; height: 40px; border-radius: 4px; object-fit: cover; border: 1px solid var(--cyan);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .app {
+      grid-template-columns: 1fr;
+    }
+    .sidebar {
+      max-height: none;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+    }
+    .main {
+      max-height: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>AI Movie Maker</h1>
+  <span class="tag">v0.1.0</span>
+</header>
+
+<div class="app">
+  <!-- ── Sidebar: Input Form ── -->
+  <div class="sidebar">
+    <h2>Create Your Movie</h2>
+
+    <!-- AI direction prompt (hidden until AI btn clicked) -->
+    <div class="ai-prompt-bar" id="aiPromptBar">
+      <span class="prompt-label" id="aiPromptLabel">AI: all</span>
+      <input type="text" id="aiDirection" placeholder="Optional direction, e.g. 'something noir'..." onkeydown="if(event.key==='Enter')executeAiGenerate();if(event.key==='Escape')cancelAiPrompt();">
+      <button onclick="executeAiGenerate()">Go ✨</button>
+      <button class="cancel" onclick="cancelAiPrompt()">&times;</button>
+    </div>
+
+    <button class="randomize-all-btn" id="randomizeAllBtn" onclick="startAiGenerate('all')">
+      <span class="dice-icon">✨</span>
+      <span class="spinner-sm"></span>
+      AI Generate All
+    </button>
+
+    <div class="field" id="field-title">
+      <div class="field-label">
+        <label>Title</label>
+        <div class="field-actions">
+          <button class="ai-btn" onclick="startAiGenerate('title')" title="AI generate title">✨ AI</button>
+          <button class="lock-toggle" onclick="toggleLock('title')">🔓</button>
+        </div>
+      </div>
+      <input type="text" id="title" value="" placeholder="Enter your movie title (optional — AI will generate one if blank)">
+    </div>
+
+    <div class="field" id="field-genre">
+      <div class="field-label">
+        <label>Genre</label>
+        <div class="field-actions">
+          <button class="ai-btn" onclick="startAiGenerate('genre')" title="AI generate genre">✨ AI</button>
+          <button class="lock-toggle" onclick="toggleLock('genre')">🔓</button>
+        </div>
+      </div>
+      <select id="genre">
+        <option value="drama">Drama</option>
+        <option value="comedy">Comedy</option>
+        <option value="horror">Horror</option>
+        <option value="thriller">Thriller</option>
+        <option value="romance">Romance</option>
+        <option value="action">Action</option>
+        <option value="sci-fi">Sci-Fi</option>
+        <option value="fantasy">Fantasy</option>
+        <option value="mystery">Mystery</option>
+        <option value="adventure">Adventure</option>
+        <option value="animation">Animation</option>
+        <option value="family">Family</option>
+      </select>
+    </div>
+
+    <div class="field" id="field-format">
+      <div class="field-label">
+        <label>Format & Duration</label>
+        <div class="field-actions">
+          <button class="ai-btn" onclick="startAiGenerate('format')" title="AI pick format">✨ AI</button>
+          <button class="lock-toggle" onclick="toggleLock('format')">🔓</button>
+        </div>
+      </div>
+      <div class="format-grid" id="formatGrid">
+        <button class="format-card" data-format="ad-commercial-15" onclick="selectFormat(this)">
+          <div class="fmt-label">15s Ad</div>
+          <div class="fmt-dur">~5 shots</div>
+        </button>
+        <button class="format-card" data-format="ad-commercial-30" onclick="selectFormat(this)">
+          <div class="fmt-label">30s Ad</div>
+          <div class="fmt-dur">~8 shots</div>
+        </button>
+        <button class="format-card" data-format="ad-commercial-60" onclick="selectFormat(this)">
+          <div class="fmt-label">60s Ad</div>
+          <div class="fmt-dur">~15 shots</div>
+        </button>
+        <button class="format-card" data-format="trailer" onclick="selectFormat(this)">
+          <div class="fmt-label">Trailer</div>
+          <div class="fmt-dur">1-2 min</div>
+        </button>
+        <button class="format-card" data-format="music-video" onclick="selectFormat(this)">
+          <div class="fmt-label">Music Video</div>
+          <div class="fmt-dur">3-4 min</div>
+        </button>
+        <button class="format-card" data-format="short-film" onclick="selectFormat(this)">
+          <div class="fmt-label">Short Film</div>
+          <div class="fmt-dur">5-15 min</div>
+        </button>
+      </div>
+      <div class="plan-preview" id="planPreview">
+        <div class="plan-row"><span>Duration</span><span id="planDuration">60s</span></div>
+        <div class="plan-row"><span>Scenes</span><span id="planScenes">~4</span></div>
+        <div class="plan-row"><span>Shots</span><span id="planShots">~15</span></div>
+        <div class="plan-row"><span>Characters</span><span id="planChars">max 4</span></div>
+        <div class="plan-row"><span>Locations</span><span id="planLocs">max 3</span></div>
+        <div class="plan-row"><span>Est. Cost</span><span id="planCost">~$7.00</span></div>
+      </div>
+    </div>
+
+    <div class="field" id="field-mainPlot">
+      <div class="field-label">
+        <label>Main Plot</label>
+        <div class="field-actions">
+          <button class="ai-btn" onclick="startAiGenerate('mainPlot')" title="AI generate plot">✨ AI</button>
+          <button class="lock-toggle" onclick="toggleLock('mainPlot')">🔓</button>
+        </div>
+      </div>
+      <textarea id="mainPlot" rows="3" placeholder="Describe the main plot or leave empty for AI..."></textarea>
+    </div>
+
+    <div class="field" id="field-tone">
+      <div class="field-label">
+        <label>Tone / Feel</label>
+        <div class="field-actions">
+          <button class="ai-btn" onclick="startAiGenerate('tone')" title="AI generate tone">✨ AI</button>
+          <button class="lock-toggle" onclick="toggleLock('tone')">🔓</button>
+        </div>
+      </div>
+      <input type="text" id="tone" placeholder="e.g., dark and gritty, lighthearted..." value="">
+    </div>
+
+    <div class="field" id="field-intendedEnding">
+      <div class="field-label">
+        <label>Intended Ending</label>
+        <div class="field-actions">
+          <button class="ai-btn" onclick="startAiGenerate('intendedEnding')" title="AI generate ending">✨ AI</button>
+          <button class="lock-toggle" onclick="toggleLock('intendedEnding')">🔓</button>
+        </div>
+      </div>
+      <textarea id="ending" rows="2" placeholder="How should it end? Leave empty for AI to decide..."></textarea>
+    </div>
+
+    <div class="field" id="field-visualStyle">
+      <div class="field-label">
+        <label>Visual Style</label>
+        <div class="field-actions">
+          <button class="ai-btn" onclick="startAiGenerate('visualStyle')" title="AI generate style">✨ AI</button>
+          <button class="lock-toggle" onclick="toggleLock('visualStyle')">🔓</button>
+        </div>
+      </div>
+      <input type="text" id="visualStyle" placeholder="e.g., cinematic, cartoon..." value="">
+    </div>
+
+    <div class="toggle-row">
+      <label class="toggle">
+        <input type="checkbox" id="kidMode">
+        <span class="slider"></span>
+      </label>
+      <span class="toggle-label">Kid-Friendly Mode</span>
+    </div>
+
+    <div class="kid-options" id="kidOptions">
+      <div class="field">
+        <label>Age Range</label>
+        <select id="kidAgeRange">
+          <option value="toddler">Toddlers (2-5)</option>
+          <option value="kids" selected>Kids (6-9)</option>
+          <option value="tweens">Tweens (10-12)</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="generate-btn" id="generateBtn" onclick="generate()">
+      Generate Movie
+      <div class="spinner"></div>
+    </button>
+    <div class="timer" id="timer">Elapsed: 0s</div>
+  </div>
+
+  <!-- ── Main: Results ── -->
+  <div class="main" id="results">
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-steps">
+        <div class="progress-step" data-p="concept">Concept</div>
+        <div class="progress-step" data-p="milestones">Milestones</div>
+        <div class="progress-step" data-p="characters">Characters</div>
+        <div class="progress-step" data-p="locations">Locations</div>
+        <div class="progress-step" data-p="scenes">Scenes</div>
+        <div class="progress-step" data-p="shots">Shots</div>
+      </div>
+    </div>
+
+    <div class="error-banner" id="errorBanner"></div>
+
+    <div class="result-ai-bar" id="resultAiBar">
+      <span class="prompt-label" id="resultAiLabel">✨ Concept</span>
+      <input type="text" id="resultAiDirection" placeholder="Optional direction..."
+        onkeydown="if(event.key==='Enter')executeResultAi();if(event.key==='Escape')cancelResultAi();">
+      <button class="go-btn" onclick="executeResultAi()">Go ✨</button>
+      <button class="cancel-btn" onclick="cancelResultAi()">&times;</button>
+    </div>
+
+    <div id="resultContent">
+      <div class="empty-state">
+        <div class="icon">🎬</div>
+        <p>Configure your movie on the left and hit <strong>Generate</strong> to start the AI pipeline.</p>
+      </div>
+    </div>
+
+    <div class="preproduction-view" id="preproductionView"></div>
+    <div class="timeline-view" id="timelineView"></div>
+  </div>
+</div>
+
+<script>
+  // ── State ──
+  let timerInterval = null;
+  let selectedFormat = '';
+  const sessionId = 'session_' + Math.random().toString(36).slice(2);
+
+  // ── Format selection ──
+  function selectFormat(btn) {
+    document.querySelectorAll('.format-card').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedFormat = btn.dataset.format;
+    loadPlan(selectedFormat);
+  }
+
+  async function loadPlan(format) {
+    try {
+      const res = await fetch(`/api/plan/${format}`);
+      const plan = await res.json();
+      document.getElementById('planDuration').textContent = plan.totalDurationSeconds + 's';
+      document.getElementById('planScenes').textContent = '~' + plan.estimatedScenes;
+      document.getElementById('planShots').textContent = '~' + plan.estimatedShots;
+      document.getElementById('planChars').textContent = 'max ' + plan.maxCharacters;
+      document.getElementById('planLocs').textContent = 'max ' + plan.maxLocations;
+      document.getElementById('planCost').textContent = plan.estimatedCost;
+    } catch (e) {
+      console.error('Failed to load plan:', e);
+    }
+  }
+
+  // ── Auto-randomize all fields on page load ──
+  async function autoRandomizeOnLoad() {
+    const allBtn = document.getElementById('randomizeAllBtn');
+    if (allBtn) { allBtn.disabled = true; allBtn.classList.add('loading'); }
+    try {
+      const res = await fetch('/api/randomize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fields: ['title', 'genre', 'format', 'mainPlot', 'tone', 'intendedEnding', 'visualStyle'],
+          context: {},
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        applyValues(data);
+      } else {
+        // Fallback: pick random genre + format from available options
+        fallbackRandomize();
+      }
+    } catch (e) {
+      console.error('Auto-randomize failed, using fallback:', e);
+      fallbackRandomize();
+    } finally {
+      if (allBtn) { allBtn.disabled = false; allBtn.classList.remove('loading'); }
+    }
+  }
+
+  function fallbackRandomize() {
+    // Random genre
+    const genreEl = document.getElementById('genre');
+    const genres = [...genreEl.options].map(o => o.value);
+    genreEl.value = genres[Math.floor(Math.random() * genres.length)];
+
+    // Random format
+    const fmtKeys = ['ad-commercial-15','ad-commercial-30','ad-commercial-60','trailer','music-video','short-film'];
+    const pick = fmtKeys[Math.floor(Math.random() * fmtKeys.length)];
+    const card = document.querySelector(`.format-card[data-format="${pick}"]`);
+    if (card) {
+      document.querySelectorAll('.format-card').forEach(b => b.classList.remove('active'));
+      card.classList.add('active');
+      selectedFormat = pick;
+      loadPlan(pick);
+    }
+  }
+
+  // Run auto-randomize on page load
+  autoRandomizeOnLoad();
+
+  // ── Kid mode toggle ──
+  document.getElementById('kidMode').addEventListener('change', e => {
+    document.getElementById('kidOptions').classList.toggle('visible', e.target.checked);
+  });
+
+  // ── Generate ──
+  async function generate() {
+    const btn = document.getElementById('generateBtn');
+    const timerEl = document.getElementById('timer');
+    const errorBanner = document.getElementById('errorBanner');
+    const progressBar = document.getElementById('progressBar');
+
+    btn.disabled = true;
+    btn.classList.add('loading');
+    errorBanner.classList.remove('visible');
+    progressBar.classList.add('visible');
+    streamingInProgress = true;
+
+    // Timer
+    let elapsed = 0;
+    timerEl.classList.add('visible');
+    timerEl.textContent = 'Elapsed: 0s';
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      elapsed++;
+      timerEl.textContent = `Elapsed: ${elapsed}s`;
+    }, 1000);
+
+    // Mark all phases as pending
+    const phases = ['concept','milestones','characters','locations','scenes','shots'];
+    document.querySelectorAll('.progress-step').forEach(step => {
+      step.className = 'progress-step active';
+    });
+
+    const input = {
+      title: document.getElementById('title').value,
+      genre: document.getElementById('genre').value,
+      format: selectedFormat,
+      mainPlot: document.getElementById('mainPlot').value || undefined,
+      tone: document.getElementById('tone').value || undefined,
+      intendedEnding: document.getElementById('ending').value || undefined,
+      automationLevel: 'full-auto',
+      kidMode: document.getElementById('kidMode').checked,
+      kidAgeRange: document.getElementById('kidMode').checked ? document.getElementById('kidAgeRange').value : undefined,
+      visualStyle: document.getElementById('visualStyle').value || undefined,
+    };
+
+    // Accumulated data — each SSE event merges into this
+    let streamData = { shots: {} };
+
+    try {
+      const res = await fetch('/api/generate-stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input, sessionId }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({ error: 'Generation failed' }));
+        throw new Error(errBody.error || 'Generation failed');
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        // Parse SSE lines
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // keep incomplete line in buffer
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6);
+          let event;
+          try { event = JSON.parse(jsonStr); } catch { continue; }
+
+          if (event.phase === 'error') {
+            throw new Error(event.error || 'Pipeline error');
+          }
+
+          if (event.phase === 'done') {
+            // All phases complete
+            streamingInProgress = false;
+            document.querySelectorAll('.progress-step').forEach(step => {
+              step.className = 'progress-step done';
+            });
+            // Re-render results so approve bar updates from "Generating..." to the real button
+            renderResults(streamData, true);
+            // Enable approve bar now that generation is complete
+            const approveBar = document.getElementById('approveBar');
+            if (approveBar) {
+              approveBar.querySelectorAll('button').forEach(b => b.disabled = false);
+              approveBar.classList.remove('streaming-disabled');
+            }
+            continue;
+          }
+
+          // Mark this phase done in progress bar
+          const stepEl = document.querySelector(`.progress-step[data-p="${event.phase}"]`);
+          if (stepEl) stepEl.className = 'progress-step done';
+
+          // Merge event data into accumulated streamData
+          if (event.plan) streamData.plan = event.plan;
+          if (event.concept) streamData.concept = event.concept;
+          if (event.milestones) streamData.milestones = event.milestones;
+          if (event.characters) streamData.characters = event.characters;
+          if (event.locations) streamData.locations = event.locations;
+          if (event.scenes) streamData.scenes = event.scenes;
+          if (event.shots) streamData.shots = event.shots;
+
+          // Progressive render — show whatever we have so far
+          renderResults(streamData);
+        }
+      }
+    } catch (err) {
+      errorBanner.textContent = err.message;
+      errorBanner.classList.add('visible');
+    } finally {
+      streamingInProgress = false;
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      clearInterval(timerInterval);
+      // Re-render so approve bar shows correct state (not "Generating...")
+      if (lastGeneratedData) renderResults(lastGeneratedData, true);
+      // Ensure approve bar is enabled if stream ended (e.g. error path)
+      const approveBar = document.getElementById('approveBar');
+      if (approveBar) {
+        approveBar.querySelectorAll('button').forEach(b => b.disabled = false);
+        approveBar.classList.remove('streaming-disabled');
+      }
+    }
+  }
+
+  // ── Shared utility ──
+  function escAttr(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── Render Results ──
+  let lastGeneratedData = null;
+  let streamingInProgress = false;
+  const lockedResults = new Set();
+  const lockedItems = new Set();
+
+  function renderResults(data, preserveLocks) {
+    lastGeneratedData = data;
+    if (!preserveLocks) {
+      lockedResults.clear();
+      lockedItems.clear();
+      ['concept','milestones','characters','locations','scenes','shots'].forEach(s => lockedResults.add(s));
+    }
+
+    document.getElementById('timelineView').classList.remove('visible');
+    document.getElementById('resultContent').style.display = '';
+
+    const el = document.getElementById('resultContent');
+    let html = '';
+
+    function sh(emoji, title, key, count) {
+      return `<div class="result-header">
+        <span class="emoji">${emoji}</span>
+        <h3>${title}</h3>
+        ${count != null ? '<span class="count">' + count + '</span>' : ''}
+        <div class="result-actions" onclick="event.stopPropagation()">
+          <button class="result-ai-btn" onclick="startResultAi('${key}')" title="AI regenerate">✨ AI</button>
+          <button class="result-lock-btn locked" onclick="toggleResultLock('${key}', this)">🔒</button>
+        </div>
+        <span class="chevron">▼</span>
+      </div>`;
+    }
+
+    function itemBar(type, idx, total) {
+      const key = type + '-' + idx;
+      const isLocked = lockedItems.has(key);
+      const showDel = type !== 'concept';
+      return '<div class="item-toolbar">'
+        + '<button class="it-lock ' + (isLocked ? 'locked' : '') + '" onclick="event.stopPropagation();toggleItemLock(\'' + type + '\',' + idx + ',this)" title="' + (isLocked ? 'Unlock' : 'Lock') + '">' + (isLocked ? '🔒' : '🔓') + '</button>'
+        + '<button onclick="event.stopPropagation();startItemAi(\'' + type + '\',' + idx + ')" title="AI regenerate">✨</button>'
+        + '<button onclick="event.stopPropagation();toggleItemEdit(\'' + type + '\',' + idx + ')" title="Edit">✏️</button>'
+        + (idx > 0 ? '<button onclick="event.stopPropagation();moveItem(\'' + type + '\',' + idx + ',-1)" title="Move up">↑</button>' : '')
+        + (idx < total - 1 ? '<button onclick="event.stopPropagation();moveItem(\'' + type + '\',' + idx + ',1)" title="Move down">↓</button>' : '')
+        + (showDel ? '<button class="it-del" onclick="event.stopPropagation();deleteItem(\'' + type + '\',' + idx + ')" title="Delete">🗑</button>' : '')
+        + '</div>';
+    }
+
+    // Production Plan (info only)
+    if (data.plan) {
+      const p = data.plan;
+      html += `
+        <div class="result-section" onclick="this.classList.toggle('collapsed')">
+          <div class="result-header">
+            <span class="emoji">📐</span>
+            <h3>Production Plan: ${esc(p.formatLabel)}</h3>
+            <span class="count">${p.totalDurationSeconds}s</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="result-body" onclick="event.stopPropagation()">
+            <div class="concept-meta">
+              <div class="meta-item"><div class="label">Duration</div><div class="value">${p.totalDurationSeconds}s</div></div>
+              <div class="meta-item"><div class="label">Scenes</div><div class="value">${p.estimatedScenes}</div></div>
+              <div class="meta-item"><div class="label">Shots</div><div class="value">${p.estimatedShots}</div></div>
+              <div class="meta-item"><div class="label">Est. Cost</div><div class="value">${esc(p.estimatedCost)}</div></div>
+            </div>
+            ${(p.breakdown || []).map(b => `
+              <div style="display:flex;justify-content:space-between;font-size:0.85rem;padding:0.3rem 0;color:var(--text2)">
+                <span>${esc(b.phase)}</span>
+                <span>${b.items} items &middot; ${esc(b.estimatedTime)}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+    }
+
+    // Concept
+    if (data.concept) {
+      const c = data.concept;
+      html += `
+        <div class="result-section" data-section="concept" onclick="this.classList.toggle('collapsed')">
+          ${sh('📝', 'Concept', 'concept')}
+          <div class="result-body" onclick="event.stopPropagation()">
+            <div class="item-card ${lockedItems.has('concept-0') ? 'item-locked' : ''}" data-type="concept" data-idx="0">
+              ${itemBar('concept', 0, 1)}
+              <div class="item-view">
+                <div class="concept-logline">"${esc(c.logline)}"</div>
+                <div class="concept-meta">
+                  <div class="meta-item"><div class="label">Theme</div><div class="value">${esc(c.theme)}</div></div>
+                  <div class="meta-item"><div class="label">Tone</div><div class="value">${esc(c.tone)}</div></div>
+                  <div class="meta-item"><div class="label">Visual Style</div><div class="value">${esc(c.visualStyleRecommendation)}</div></div>
+                  <div class="meta-item"><div class="label">Audience</div><div class="value">${esc(c.targetAudience)}</div></div>
+                </div>
+                <div class="synopsis">${esc(c.synopsis)}</div>
+              </div>
+              <div class="item-edit-form">
+                <div class="ef-row"><span class="ef-label">Logline</span><textarea data-field="logline">${esc(c.logline)}</textarea></div>
+                <div class="ef-row"><span class="ef-label">Synopsis</span><textarea data-field="synopsis" style="min-height:80px">${esc(c.synopsis)}</textarea></div>
+                <div class="ef-row"><span class="ef-label">Theme</span><input data-field="theme" value="${escAttr(c.theme)}"></div>
+                <div class="ef-row"><span class="ef-label">Tone</span><input data-field="tone" value="${escAttr(c.tone)}"></div>
+                <div class="ef-row"><span class="ef-label">Visual Style</span><input data-field="visualStyleRecommendation" value="${escAttr(c.visualStyleRecommendation)}"></div>
+                <div class="ef-row"><span class="ef-label">Target Audience</span><input data-field="targetAudience" value="${escAttr(c.targetAudience)}"></div>
+                <div class="edit-actions">
+                  <button class="cancel-edit-btn" onclick="event.stopPropagation();cancelItemEdit('concept',0)">Cancel</button>
+                  <button class="save-edit-btn" onclick="event.stopPropagation();saveItemEdit('concept',0)">Save</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // Milestones
+    if (data.milestones) {
+      const ms = data.milestones.milestones;
+      html += `
+        <div class="result-section" data-section="milestones" onclick="this.classList.toggle('collapsed')">
+          ${sh('🎯', 'Story Milestones', 'milestones', ms.length)}
+          <div class="result-body" onclick="event.stopPropagation()">
+            ${ms.map((m, i) => `
+              <div class="milestone-card item-card ${lockedItems.has('milestone-'+i) ? 'item-locked' : ''}" data-type="milestone" data-idx="${i}">
+                ${itemBar('milestone', i, ms.length)}
+                <div class="item-view">
+                  <div class="beat-id">${esc(m.beatId)}</div>
+                  <h4>${esc(m.title)}</h4>
+                  <p>${esc(m.description)}</p>
+                  <div class="meta">
+                    <span>🎭 ${esc(m.emotionalTone)}</span>
+                    <span>📍 ${esc(m.location)}</span>
+                    <span>⚡ ${esc(m.stakes?.substring(0, 50) || '')}</span>
+                  </div>
+                </div>
+                <div class="item-edit-form">
+                  <div class="ef-row"><span class="ef-label">Beat ID</span><input data-field="beatId" value="${escAttr(m.beatId)}"></div>
+                  <div class="ef-row"><span class="ef-label">Title</span><input data-field="title" value="${escAttr(m.title)}"></div>
+                  <div class="ef-row"><span class="ef-label">Description</span><textarea data-field="description">${esc(m.description)}</textarea></div>
+                  <div class="ef-row"><span class="ef-label">Emotional Tone</span><input data-field="emotionalTone" value="${escAttr(m.emotionalTone)}"></div>
+                  <div class="ef-row"><span class="ef-label">Location</span><input data-field="location" value="${escAttr(m.location)}"></div>
+                  <div class="ef-row"><span class="ef-label">Stakes</span><input data-field="stakes" value="${escAttr(m.stakes || '')}"></div>
+                  <div class="edit-actions">
+                    <button class="cancel-edit-btn" onclick="event.stopPropagation();cancelItemEdit('milestone',${i})">Cancel</button>
+                    <button class="save-edit-btn" onclick="event.stopPropagation();saveItemEdit('milestone',${i})">Save</button>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+            <button class="add-item-btn" onclick="event.stopPropagation();addItem('milestone')">+ Add Milestone</button>
+          </div>
+        </div>`;
+    }
+
+    // Characters
+    if (data.characters) {
+      const chars = data.characters.characters;
+      html += `
+        <div class="result-section" data-section="characters" onclick="this.classList.toggle('collapsed')">
+          ${sh('🎭', 'Characters', 'characters', chars.length)}
+          <div class="result-body" onclick="event.stopPropagation()">
+            ${chars.map((c, i) => {
+              const app = c.appearance || {};
+              const initials = c.name.split(' ').map(w => w[0]).join('').slice(0,2);
+              return `
+                <div class="character-card item-card ${lockedItems.has('character-'+i) ? 'item-locked' : ''}" data-type="character" data-idx="${i}">
+                  ${itemBar('character', i, chars.length)}
+                  <div class="item-view">
+                    <div class="char-header">
+                      <div class="avatar">${esc(initials)}</div>
+                      <div>
+                        <h4>${esc(c.name)}</h4>
+                        <div class="role">${esc(c.role)} &middot; ${esc(c.importance)}</div>
+                      </div>
+                    </div>
+                    <div class="personality">${esc(c.personality)}</div>
+                    <div class="char-details">
+                      <span><span class="lbl">Age:</span> ${app.age || '?'}</span>
+                      <span><span class="lbl">Gender:</span> ${esc(app.gender || '')}</span>
+                      <span><span class="lbl">Ethnicity:</span> ${esc(app.ethnicity || '')}</span>
+                      <span><span class="lbl">Height:</span> ${esc(app.height || '')}</span>
+                      <span><span class="lbl">Build:</span> ${esc(app.build || '')}</span>
+                      <span><span class="lbl">Skin:</span> ${esc(app.skinTone || '')}</span>
+                      <span><span class="lbl">Hair:</span> ${esc(app.hairColor || '')} ${esc(app.hairStyle || '')}</span>
+                      <span><span class="lbl">Eyes:</span> ${esc(app.eyeColor || '')}</span>
+                    </div>
+                    ${c.defaultOutfit ? `<div style="margin-top:0.4rem;font-size:0.78rem;color:var(--text2)">Outfit: ${[c.defaultOutfit.top?.type, c.defaultOutfit.bottom?.type, c.defaultOutfit.footwear?.type].filter(Boolean).map(x => esc(x)).join(', ')}</div>` : ''}
+                    ${(c.accessories || []).length > 0 ? `<div style="margin-top:0.2rem;font-size:0.78rem;color:var(--text2)">Accessories: ${c.accessories.map(a => esc(a.name || a.description || '') + ' (' + esc(a.wornWhen || 'always') + ')').join(', ')}</div>` : ''}
+                  </div>
+                  <div class="item-edit-form">
+                    <div class="ef-row"><span class="ef-label">Name</span><input data-field="name" value="${escAttr(c.name)}"></div>
+                    <div class="ef-row"><span class="ef-label">Role</span><input data-field="role" value="${escAttr(c.role)}"></div>
+                    <div class="ef-row"><span class="ef-label">Importance</span><input data-field="importance" value="${escAttr(c.importance)}"></div>
+                    <div class="ef-row"><span class="ef-label">Personality</span><textarea data-field="personality">${esc(c.personality)}</textarea></div>
+                    <div class="ef-row"><span class="ef-label">Age</span><input data-field="appearance.age" value="${escAttr(app.age || '')}"></div>
+                    <div class="ef-row"><span class="ef-label">Gender</span><input data-field="appearance.gender" value="${escAttr(app.gender || '')}"></div>
+                    <div class="ef-row"><span class="ef-label">Ethnicity</span><input data-field="appearance.ethnicity" value="${escAttr(app.ethnicity || '')}"></div>
+                    <div class="ef-row"><span class="ef-label">Height</span><input data-field="appearance.height" value="${escAttr(app.height || '')}"></div>
+                    <div class="ef-row"><span class="ef-label">Build</span><input data-field="appearance.build" value="${escAttr(app.build || '')}"></div>
+                    <div class="ef-row"><span class="ef-label">Skin Tone</span><input data-field="appearance.skinTone" value="${escAttr(app.skinTone || '')}"></div>
+                    <div class="ef-row"><span class="ef-label">Hair Color</span><input data-field="appearance.hairColor" value="${escAttr(app.hairColor || '')}"></div>
+                    <div class="ef-row"><span class="ef-label">Hair Style</span><input data-field="appearance.hairStyle" value="${escAttr(app.hairStyle || '')}"></div>
+                    <div class="ef-row"><span class="ef-label">Eye Color</span><input data-field="appearance.eyeColor" value="${escAttr(app.eyeColor || '')}"></div>
+                    <div class="ef-row"><span class="ef-label">Facial Hair</span><input data-field="appearance.facialHair" value="${escAttr(app.facialHair || '')}"></div>
+                    <div class="edit-actions">
+                      <button class="cancel-edit-btn" onclick="event.stopPropagation();cancelItemEdit('character',${i})">Cancel</button>
+                      <button class="save-edit-btn" onclick="event.stopPropagation();saveItemEdit('character',${i})">Save</button>
+                    </div>
+                  </div>
+                </div>`;
+            }).join('')}
+            <button class="add-item-btn" onclick="event.stopPropagation();addItem('character')">+ Add Character</button>
+          </div>
+        </div>`;
+    }
+
+    // Locations
+    if (data.locations) {
+      const locs = data.locations.locations;
+      html += `
+        <div class="result-section" data-section="locations" onclick="this.classList.toggle('collapsed')">
+          ${sh('📍', 'Locations', 'locations', locs.length)}
+          <div class="result-body" onclick="event.stopPropagation()">
+            ${locs.map((l, i) => `
+              <div class="location-card item-card ${lockedItems.has('location-'+i) ? 'item-locked' : ''}" data-type="location" data-idx="${i}">
+                ${itemBar('location', i, locs.length)}
+                <div class="item-view">
+                  <h4>${esc(l.name)}</h4>
+                  <div class="type">${esc(l.type)} &middot; ${l.interior ? 'Interior' : 'Exterior'} &middot; ${esc(l.lightingCondition || '')}</div>
+                  <p>${esc(l.description)}</p>
+                  ${(l.colorScheme || []).length > 0 ? `<div class="color-swatches">${l.colorScheme.map(c => `<div class="swatch" style="background:${c}" title="${c}"></div>`).join('')}</div>` : ''}
+                </div>
+                <div class="item-edit-form">
+                  <div class="ef-row"><span class="ef-label">Name</span><input data-field="name" value="${escAttr(l.name)}"></div>
+                  <div class="ef-row"><span class="ef-label">Type</span><input data-field="type" value="${escAttr(l.type)}"></div>
+                  <div class="ef-row"><span class="ef-label">Description</span><textarea data-field="description">${esc(l.description)}</textarea></div>
+                  <div class="ef-row"><span class="ef-label">Interior</span><select data-field="interior"><option value="true" ${l.interior ? 'selected' : ''}>Interior</option><option value="false" ${!l.interior ? 'selected' : ''}>Exterior</option></select></div>
+                  <div class="ef-row"><span class="ef-label">Lighting</span><input data-field="lightingCondition" value="${escAttr(l.lightingCondition || '')}"></div>
+                  <div class="ef-row"><span class="ef-label">Mood</span><input data-field="mood" value="${escAttr(l.mood || '')}"></div>
+                  <div class="edit-actions">
+                    <button class="cancel-edit-btn" onclick="event.stopPropagation();cancelItemEdit('location',${i})">Cancel</button>
+                    <button class="save-edit-btn" onclick="event.stopPropagation();saveItemEdit('location',${i})">Save</button>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+            <button class="add-item-btn" onclick="event.stopPropagation();addItem('location')">+ Add Location</button>
+          </div>
+        </div>`;
+    }
+
+    // Scenes
+    if (data.scenes && data.scenes.length > 0) {
+      html += `
+        <div class="result-section" data-section="scenes" onclick="this.classList.toggle('collapsed')">
+          ${sh('🎬', 'Scenes', 'scenes', data.scenes.length)}
+          <div class="result-body" onclick="event.stopPropagation()">
+            ${data.scenes.map((s, i) => `
+              <div class="scene-card item-card ${lockedItems.has('scene-'+i) ? 'item-locked' : ''}" data-type="scene" data-idx="${i}">
+                ${itemBar('scene', i, data.scenes.length)}
+                <div class="item-view">
+                  <div class="slugline">${esc(s.slugline)}</div>
+                  <h4>${esc(s.title)}</h4>
+                  <div class="desc">${esc(s.description)}</div>
+                  <div style="font-size:0.75rem;color:var(--text2)">
+                    Tension: ${s.tensionLevel}/10 &middot; Duration: ${s.estimatedDurationSeconds}s &middot; Music: ${esc(s.musicMood || 'none')}
+                  </div>
+                  ${(s.dialogue || []).length > 0 ? `
+                    <div class="dialogue-preview">
+                      ${s.dialogue.slice(0, 3).map(d => `
+                        <div>
+                          <span class="char-name">${esc(d.character)}</span>
+                          ${d.parenthetical ? `<span class="parenthetical">${esc(d.parenthetical)}</span>` : ''}
+                          <span class="line-text">${esc(d.text)}</span>
+                        </div>
+                      `).join('')}
+                      ${s.dialogue.length > 3 ? `<div style="color:var(--text2);margin-top:0.3rem">... ${s.dialogue.length - 3} more lines</div>` : ''}
+                    </div>
+                  ` : ''}
+                </div>
+                <div class="item-edit-form">
+                  <div class="ef-row"><span class="ef-label">Title</span><input data-field="title" value="${escAttr(s.title)}"></div>
+                  <div class="ef-row"><span class="ef-label">Slugline</span><input data-field="slugline" value="${escAttr(s.slugline)}"></div>
+                  <div class="ef-row"><span class="ef-label">Description</span><textarea data-field="description">${esc(s.description)}</textarea></div>
+                  <div class="ef-row"><span class="ef-label">Tension (1-10)</span><input type="number" min="1" max="10" data-field="tensionLevel" value="${s.tensionLevel || 5}"></div>
+                  <div class="ef-row"><span class="ef-label">Duration (s)</span><input type="number" data-field="estimatedDurationSeconds" value="${s.estimatedDurationSeconds || 10}"></div>
+                  <div class="ef-row"><span class="ef-label">Music Mood</span><input data-field="musicMood" value="${escAttr(s.musicMood || '')}"></div>
+                  <div class="edit-actions">
+                    <button class="cancel-edit-btn" onclick="event.stopPropagation();cancelItemEdit('scene',${i})">Cancel</button>
+                    <button class="save-edit-btn" onclick="event.stopPropagation();saveItemEdit('scene',${i})">Save</button>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+            <button class="add-item-btn" onclick="event.stopPropagation();addItem('scene')">+ Add Scene</button>
+          </div>
+        </div>`;
+    }
+
+    // Shots
+    if (data.shots && Object.keys(data.shots).length > 0) {
+      for (const [sceneIdx, shotOutput] of Object.entries(data.shots)) {
+        const sceneName = data.scenes?.[parseInt(sceneIdx)]?.title || `Scene ${sceneIdx}`;
+        const shots = shotOutput.shots || [];
+        html += `
+          <div class="result-section" data-section="shots-${sceneIdx}" onclick="this.classList.toggle('collapsed')">
+            ${sh('🎥', 'Shots: &quot;' + esc(sceneName) + '&quot;', 'shots', shots.length)}
+            <div class="result-body" onclick="event.stopPropagation()">
+              ${shots.map((shot, j) => `
+                <div class="shot-card item-card ${lockedItems.has('shot-'+sceneIdx+'-'+j) ? 'item-locked' : ''}" data-type="shot-${sceneIdx}" data-idx="${j}">
+                  ${itemBar('shot-'+sceneIdx, j, shots.length)}
+                  <div class="item-view">
+                    <div class="shot-header">
+                      <span class="duration">${shot.durationSeconds}s</span>
+                      <span class="camera-info">${esc(shot.camera?.movement || '')} &middot; ${esc(shot.camera?.startSize || '')} → ${esc(shot.camera?.endSize || '')}</span>
+                    </div>
+                    <div style="font-size:0.85rem;margin-bottom:0.5rem">${esc(shot.description)}</div>
+                    <div class="frame-pair">
+                      <div class="frame-box first">
+                        <div class="frame-label">First Frame</div>
+                        <div class="frame-desc">${esc(shot.firstFrame?.description || '')}</div>
+                      </div>
+                      <div class="frame-box last">
+                        <div class="frame-label">Last Frame</div>
+                        <div class="frame-desc">${esc(shot.lastFrame?.description || '')}</div>
+                      </div>
+                    </div>
+                    ${(shot.dialogueInShot || []).length > 0 ? `<div style="margin-top:0.4rem;font-size:0.78rem;color:var(--text2)">Dialogue: "${esc(shot.dialogueInShot.join(' | '))}"</div>` : ''}
+                  </div>
+                  <div class="item-edit-form">
+                    <div class="ef-row"><span class="ef-label">Description</span><textarea data-field="description">${esc(shot.description)}</textarea></div>
+                    <div class="ef-row"><span class="ef-label">Duration (s)</span><input type="number" data-field="durationSeconds" value="${shot.durationSeconds || ''}"></div>
+                    <div class="ef-row"><span class="ef-label">Camera Movement</span><input data-field="camera.movement" value="${escAttr(shot.camera?.movement || '')}"></div>
+                    <div class="ef-row"><span class="ef-label">First Frame</span><textarea data-field="firstFrame.description">${esc(shot.firstFrame?.description || '')}</textarea></div>
+                    <div class="ef-row"><span class="ef-label">Last Frame</span><textarea data-field="lastFrame.description">${esc(shot.lastFrame?.description || '')}</textarea></div>
+                    <div class="edit-actions">
+                      <button class="cancel-edit-btn" onclick="event.stopPropagation();cancelItemEdit('shot-${sceneIdx}',${j})">Cancel</button>
+                      <button class="save-edit-btn" onclick="event.stopPropagation();saveItemEdit('shot-${sceneIdx}',${j})">Save</button>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>`;
+      }
+    }
+
+    // Approve bar — disabled while streaming
+    const streamDisabled = streamingInProgress ? 'disabled' : '';
+    const streamClass = streamingInProgress ? 'streaming-disabled' : '';
+    html += `
+      <div class="approve-bar ${streamClass}" id="approveBar">
+        <button class="regenerate-all-btn" onclick="regenerateUnlocked()" ${streamDisabled}>✨ Regenerate Unlocked</button>
+        <button class="approve-btn" onclick="approveAndBuildTimeline()" ${streamDisabled}>
+          ${streamingInProgress ? '⏳ Generating…' : 'Approve & Enter Pre-Production →'}
+        </button>
+      </div>`;
+
+    el.innerHTML = html;
+  }
+
+  // ── Lock state ──
+  const lockedFields = new Set();
+
+  function toggleLock(fieldName) {
+    const fieldEl = document.getElementById('field-' + fieldName);
+    const lockBtn = fieldEl?.querySelector('.lock-toggle');
+    if (!fieldEl || !lockBtn) return;
+
+    if (lockedFields.has(fieldName)) {
+      lockedFields.delete(fieldName);
+      lockBtn.classList.remove('locked');
+      lockBtn.textContent = '🔓';
+      lockBtn.title = 'Lock ' + fieldName;
+      fieldEl.classList.remove('locked');
+    } else {
+      lockedFields.add(fieldName);
+      lockBtn.classList.add('locked');
+      lockBtn.textContent = '🔒';
+      lockBtn.title = 'Unlock ' + fieldName;
+      fieldEl.classList.add('locked');
+    }
+  }
+
+  // ── AI prompt bar ──
+  let aiTargetField = null;
+
+  const fieldLabels = {
+    all: 'All Fields', title: 'Title', genre: 'Genre', format: 'Format',
+    mainPlot: 'Plot', tone: 'Tone', intendedEnding: 'Ending', visualStyle: 'Style'
+  };
+
+  function startAiGenerate(field) {
+    // If the field is locked, don't allow AI generation
+    if (field !== 'all' && lockedFields.has(field)) return;
+
+    aiTargetField = field;
+    const bar = document.getElementById('aiPromptBar');
+    const label = document.getElementById('aiPromptLabel');
+    const input = document.getElementById('aiDirection');
+    label.textContent = '✨ ' + (fieldLabels[field] || field);
+    input.value = '';
+    input.placeholder = field === 'all'
+      ? 'Optional: overall direction, e.g. "dark sci-fi"...'
+      : `Optional: direction for ${fieldLabels[field] || field}...`;
+    bar.classList.add('visible');
+    input.focus();
+  }
+
+  function cancelAiPrompt() {
+    document.getElementById('aiPromptBar').classList.remove('visible');
+    aiTargetField = null;
+  }
+
+  async function executeAiGenerate() {
+    if (!aiTargetField) return;
+    const field = aiTargetField;
+    const direction = document.getElementById('aiDirection').value.trim();
+    cancelAiPrompt();
+
+    // Determine which fields to generate
+    const allFields = ['title', 'genre', 'format', 'mainPlot', 'tone', 'intendedEnding', 'visualStyle'];
+    let fieldsToGen;
+    if (field === 'all') {
+      fieldsToGen = allFields.filter(f => !lockedFields.has(f));
+    } else {
+      fieldsToGen = [field];
+    }
+
+    if (fieldsToGen.length === 0) return;
+
+    // Show loading state
+    const isAll = field === 'all';
+    const allBtn = document.getElementById('randomizeAllBtn');
+    let fieldAiBtn = null;
+
+    if (isAll) {
+      allBtn.disabled = true;
+      allBtn.classList.add('loading');
+    } else {
+      const fieldEl = document.getElementById('field-' + field);
+      fieldAiBtn = fieldEl?.querySelector('.ai-btn');
+      if (fieldAiBtn) fieldAiBtn.classList.add('loading');
+    }
+
+    try {
+      const res = await fetch('/api/randomize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fields: fieldsToGen,
+          context: getContext(),
+          direction: direction || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      applyValues(data);
+    } catch (err) {
+      console.error('AI generate failed:', err);
+    } finally {
+      if (isAll) {
+        allBtn.disabled = false;
+        allBtn.classList.remove('loading');
+      }
+      if (fieldAiBtn) fieldAiBtn.classList.remove('loading');
+    }
+  }
+
+  // ── Field helpers ──
+
+  // Human-readable labels for format keys
+  const FORMAT_LABELS = {
+    'ad-commercial-15': '15-second advertisement/commercial',
+    'ad-commercial-30': '30-second advertisement/commercial',
+    'ad-commercial-60': '60-second advertisement/commercial',
+    'trailer':          'movie trailer (1-2 minutes)',
+    'music-video':      'music video (3-4 minutes)',
+    'short-film':       'short film (5-15 minutes)',
+  };
+
+  function getContext() {
+    const fmt = selectedFormat;
+    // Send both the raw key and a human-readable description so the AI fully understands the constraint
+    const formatLabel = FORMAT_LABELS[fmt] || fmt;
+    return {
+      title: document.getElementById('title').value,
+      genre: document.getElementById('genre').value,
+      format: fmt,
+      formatDescription: fmt ? formatLabel : '',
+      mainPlot: document.getElementById('mainPlot').value,
+      tone: document.getElementById('tone').value,
+      intendedEnding: document.getElementById('ending').value,
+      visualStyle: document.getElementById('visualStyle').value,
+    };
+  }
+
+  const FORMAT_KEYS = ['ad-commercial-15','ad-commercial-30','ad-commercial-60','trailer','music-video','short-film'];
+
+  function applyValues(data) {
+    if (data.title != null) document.getElementById('title').value = data.title;
+    if (data.genre != null) {
+      const genreEl = document.getElementById('genre');
+      const val = data.genre.toLowerCase();
+      const opt = [...genreEl.options].find(o => o.value === val);
+      if (opt) genreEl.value = val;
+    }
+    if (data.format != null) {
+      // AI returned a format — find the matching card
+      const fmt = data.format.toLowerCase().replace(/\s+/g, '-');
+      const match = FORMAT_KEYS.find(k => k === fmt || fmt.includes(k) || k.includes(fmt));
+      if (match) {
+        const card = document.querySelector(`.format-card[data-format="${match}"]`);
+        if (card) {
+          document.querySelectorAll('.format-card').forEach(b => b.classList.remove('active'));
+          card.classList.add('active');
+          selectedFormat = match;
+          loadPlan(match);
+        }
+      }
+    }
+    if (data.mainPlot != null) document.getElementById('mainPlot').value = data.mainPlot;
+    if (data.tone != null) document.getElementById('tone').value = data.tone;
+    if (data.intendedEnding != null) document.getElementById('ending').value = data.intendedEnding;
+    if (data.visualStyle != null) document.getElementById('visualStyle').value = data.visualStyle;
+  }
+
+  // ── Result lock/AI/approve/timeline ──
+  let resultAiTarget = null;
+
+  function toggleResultLock(section, btn) {
+    if (lockedResults.has(section)) {
+      lockedResults.delete(section);
+      btn.classList.remove('locked');
+      btn.textContent = '🔓';
+      btn.title = 'Lock ' + section;
+      const el = document.querySelector('.result-section[data-section="' + section + '"]');
+      if (el) el.classList.add('unlocked');
+    } else {
+      lockedResults.add(section);
+      btn.classList.add('locked');
+      btn.textContent = '🔒';
+      btn.title = 'Unlock ' + section;
+      const el = document.querySelector('.result-section[data-section="' + section + '"]');
+      if (el) el.classList.remove('unlocked');
+    }
+  }
+
+  function startResultAi(section) {
+    if (lockedResults.has(section)) {
+      alert('Unlock this section first to regenerate it.');
+      return;
+    }
+    resultAiTarget = section;
+    const bar = document.getElementById('resultAiBar');
+    const label = document.getElementById('resultAiLabel');
+    const input = document.getElementById('resultAiDirection');
+    const names = { concept:'Concept', milestones:'Milestones', characters:'Characters',
+      locations:'Locations', scenes:'Scenes', shots:'Shots' };
+    label.textContent = '✨ ' + (names[section] || section);
+    input.value = '';
+    bar.classList.add('visible');
+    input.focus();
+  }
+
+  function cancelResultAi() {
+    document.getElementById('resultAiBar').classList.remove('visible');
+    resultAiTarget = null;
+  }
+
+  async function executeResultAi() {
+    if (!resultAiTarget || !lastGeneratedData) return;
+    const target = resultAiTarget;
+    const direction = document.getElementById('resultAiDirection').value.trim();
+    cancelResultAi();
+
+    // Check if item-level target (e.g., 'milestone:0')
+    const isItem = target.includes(':');
+
+    if (isItem) {
+      const [type, idxStr] = target.split(':');
+      const idx = parseInt(idxStr);
+      const card = document.querySelector('.item-card[data-type="' + type + '"][data-idx="' + idx + '"]');
+      if (card) card.style.opacity = '0.5';
+
+      try {
+        const res = await fetch('/api/regenerate-item', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, index: idx, currentData: lastGeneratedData, direction: direction || undefined }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        const d = lastGeneratedData;
+        const baseType = type.startsWith('shot-') ? 'shot' : type;
+        if (baseType === 'concept') d.concept = data;
+        else if (baseType === 'milestone' && d.milestones?.milestones) d.milestones.milestones[idx] = data;
+        else if (baseType === 'character' && d.characters?.characters) d.characters.characters[idx] = data;
+        else if (baseType === 'location' && d.locations?.locations) d.locations.locations[idx] = data;
+        else if (baseType === 'scene' && d.scenes) d.scenes[idx] = data;
+        else if (baseType === 'shot') {
+          const si = parseInt(type.split('-')[1]);
+          const g = d.shots[si] || d.shots[String(si)];
+          if (g?.shots) g.shots[idx] = data;
+        }
+        renderResults(d, true);
+      } catch (err) {
+        console.error('Item regeneration failed:', err);
+        alert('Regeneration failed: ' + err.message);
+      } finally {
+        if (card) card.style.opacity = '';
+      }
+    } else {
+      // Section-level regeneration
+      const section = target;
+      const sectionEl = document.querySelector('.result-section[data-section="' + section + '"]');
+      const aiBtn = sectionEl?.querySelector('.result-ai-btn');
+      if (aiBtn) aiBtn.textContent = '⏳';
+
+      try {
+        const input = getContext();
+        input.format = selectedFormat;
+        const res = await fetch('/api/regenerate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phase: section,
+            input,
+            currentData: lastGeneratedData,
+            direction: direction || undefined,
+            sessionId,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        Object.assign(lastGeneratedData, data);
+        renderResults(lastGeneratedData, true);
+        lockedResults.delete(section);
+        const newBtn = document.querySelector('.result-section[data-section="' + section + '"] .result-lock-btn');
+        if (newBtn) {
+          newBtn.classList.remove('locked');
+          newBtn.textContent = '🔓';
+          const newEl = document.querySelector('.result-section[data-section="' + section + '"]');
+          if (newEl) newEl.classList.add('unlocked');
+        }
+      } catch (err) {
+        console.error('Regeneration failed:', err);
+        alert('Regeneration failed: ' + err.message);
+      } finally {
+        if (aiBtn) aiBtn.textContent = '✨ AI';
+      }
+    }
+  }
+
+  async function regenerateUnlocked() {
+    const unlocked = ['concept','milestones','characters','locations','scenes'].filter(s => !lockedResults.has(s));
+    if (unlocked.length === 0) {
+      alert('All sections are locked. Unlock sections you want to regenerate.');
+      return;
+    }
+    for (const section of unlocked) {
+      resultAiTarget = section;
+      document.getElementById('resultAiDirection').value = '';
+      await executeResultAi();
+    }
+  }
+
+  // ── Pre-Production state ──
+  let preProductionData = null; // { continuityPlan, wardrobePlan, assetApprovals, sceneSignoffs, audioDesign }
+  const ppLockedItems = new Set(); // tracks locked pre-production items e.g. "char-0", "loc-1", "outfit-Alex-2", "audio-theme-0"
+
+  function ppItemBar(type, idx) {
+    const key = type + '-' + idx;
+    const isLocked = ppLockedItems.has(key);
+    const supportsUpload = type === 'char' || type === 'loc';
+    return '<div class="pp-item-toolbar">'
+      + '<button class="pp-lock-btn ' + (isLocked ? 'locked' : '') + '" onclick="event.stopPropagation();togglePPLock(\'' + type + '\',' + idx + ',this)" title="' + (isLocked ? 'Unlock' : 'Lock') + '">' + (isLocked ? '🔒' : '🔓') + '</button>'
+      + '<button onclick="event.stopPropagation();ppAiRegen(\'' + type + '\',' + idx + ')" title="AI regenerate">✨</button>'
+      + '<button onclick="event.stopPropagation();togglePPEdit(\'' + type + '\',' + idx + ')" title="Edit">✏️</button>'
+      + (supportsUpload ? '<button class="pp-upload-ref-btn" onclick="event.stopPropagation();triggerPPUpload(\'' + type + '\',' + idx + ')" title="Upload reference image">📷</button>' : '')
+      + '</div>';
+  }
+
+  function togglePPLock(type, idx, btn) {
+    const key = type + '-' + idx;
+    const card = btn.closest('.pp-item-card');
+    if (ppLockedItems.has(key)) {
+      ppLockedItems.delete(key);
+      btn.classList.remove('locked');
+      btn.textContent = '🔓';
+      card?.classList.remove('pp-locked');
+    } else {
+      ppLockedItems.add(key);
+      btn.classList.add('locked');
+      btn.textContent = '🔒';
+      card?.classList.add('pp-locked');
+    }
+  }
+
+  function togglePPEdit(type, idx) {
+    if (ppLockedItems.has(type + '-' + idx)) return;
+    const card = document.querySelector('.pp-item-card[data-pp-type="' + type + '"][data-pp-idx="' + idx + '"]');
+    if (card) card.classList.toggle('pp-editing');
+  }
+
+  function cancelPPEdit(type, idx) {
+    const card = document.querySelector('.pp-item-card[data-pp-type="' + type + '"][data-pp-idx="' + idx + '"]');
+    if (card) card.classList.remove('pp-editing');
+  }
+
+  function savePPEdit(type, idx) {
+    const card = document.querySelector('.pp-item-card[data-pp-type="' + type + '"][data-pp-idx="' + idx + '"]');
+    if (!card) return;
+    const inputs = card.querySelectorAll('.pp-edit-form [data-field]');
+    const updates = {};
+    inputs.forEach(inp => {
+      const field = inp.dataset.field;
+      updates[field] = inp.tagName === 'TEXTAREA' ? inp.value : (inp.type === 'number' ? Number(inp.value) : inp.value);
+    });
+
+    const d = lastGeneratedData;
+    if (type === 'char') {
+      const c = d.characters?.characters?.[idx];
+      if (!c) return;
+      if (updates.name !== undefined) c.name = updates.name;
+      const app = c.appearance || {};
+      ['age','gender','ethnicity','height','build','skinTone','hairColor','hairStyle','eyeColor','facialHair'].forEach(f => {
+        if (updates[f] !== undefined) app[f] = updates[f];
+      });
+      if (updates.distinctiveFeatures !== undefined) app.distinctiveFeatures = updates.distinctiveFeatures.split(',').map(s => s.trim()).filter(Boolean);
+      c.appearance = app;
+    } else if (type === 'loc') {
+      const l = d.locations?.locations?.[idx];
+      if (!l) return;
+      ['name','type','description','lightingCondition','mood'].forEach(f => { if (updates[f] !== undefined) l[f] = updates[f]; });
+      if (updates.interior !== undefined) l.interior = updates.interior === 'true';
+      if (updates.colorScheme !== undefined) l.colorScheme = updates.colorScheme.split(',').map(s => s.trim()).filter(Boolean);
+      if (updates.keyFeatures !== undefined) l.keyFeatures = updates.keyFeatures.split(',').map(s => s.trim()).filter(Boolean);
+    } else if (type === 'outfit') {
+      const wp = preProductionData?.wardrobePlan?.wardrobeEntries || [];
+      const entry = wp[idx];
+      if (!entry) return;
+      if (updates.outfitName !== undefined) entry.outfitName = updates.outfitName;
+      if (updates.outfitDescription !== undefined) entry.outfitDescription = updates.outfitDescription;
+    } else if (type === 'audio-theme') {
+      const themes = preProductionData?.audioDesign?.globalThemes || [];
+      const theme = themes[idx];
+      if (!theme) return;
+      ['name','mood','description','tempo','genre','generationPrompt'].forEach(f => { if (updates[f] !== undefined) theme[f] = updates[f]; });
+      if (updates.instruments !== undefined) theme.instruments = updates.instruments.split(',').map(s => s.trim()).filter(Boolean);
+    } else if (type === 'audio-scene') {
+      const sa = preProductionData?.audioDesign?.sceneAudio || [];
+      const entry = sa.find(s => s.sceneIndex === idx);
+      if (!entry) return;
+      ['musicTheme','musicPrompt','musicMood','musicAction'].forEach(f => { if (updates[f] !== undefined) entry[f] = updates[f]; });
+    }
+    renderPreProduction();
+  }
+
+  function ppAiRegen(type, idx) {
+    if (ppLockedItems.has(type + '-' + idx)) {
+      alert('Unlock this item first to use AI.');
+      return;
+    }
+    const direction = prompt('Creative direction for AI regeneration (optional):');
+    if (direction === null) return; // cancelled
+    if (type === 'char') {
+      const c = lastGeneratedData?.characters?.characters?.[idx];
+      if (c) regenerateAsset('character-ref', c.name, { name: c.name, appearance: c.appearance, direction });
+    } else if (type === 'loc') {
+      const l = lastGeneratedData?.locations?.locations?.[idx];
+      if (l) regenerateAsset('background', l.name, { name: l.name, type: l.type, description: l.description, direction });
+    } else if (type === 'outfit') {
+      const wp = preProductionData?.wardrobePlan?.wardrobeEntries || [];
+      const entry = wp[idx];
+      if (entry) regenerateAsset('outfit', entry.characterName + '-s' + entry.sceneIndex, { character: entry.characterName, outfitName: entry.outfitName, direction });
+    } else if (type === 'audio-theme') {
+      const theme = preProductionData?.audioDesign?.globalThemes?.[idx];
+      if (theme) regenerateAsset('audio-theme', theme.name, { ...theme, direction });
+    } else if (type === 'audio-scene') {
+      const scene = lastGeneratedData?.scenes?.[idx];
+      if (scene) regenerateAsset('audio-scene', 'scene-' + idx, { sceneTitle: scene.title, direction });
+    }
+  }
+
+  // Reference image upload for characters and locations
+  function triggerPPUpload(type, idx) {
+    if (ppLockedItems.has(type + '-' + idx)) { alert('Unlock this item first.'); return; }
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result;
+        const base64 = dataUrl.split(',')[1];
+        const mimeType = file.type || 'image/png';
+        if (type === 'char') {
+          const c = lastGeneratedData?.characters?.characters?.[idx];
+          if (c) {
+            c.uploadedReference = { base64, mimeType };
+            renderPreProduction();
+          }
+        } else if (type === 'loc') {
+          const l = lastGeneratedData?.locations?.locations?.[idx];
+          if (l) {
+            l.uploadedReference = { base64, mimeType };
+            renderPreProduction();
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  }
+
+  function clearPPUpload(type, idx) {
+    if (type === 'char') {
+      const c = lastGeneratedData?.characters?.characters?.[idx];
+      if (c) { delete c.uploadedReference; renderPreProduction(); }
+    } else if (type === 'loc') {
+      const l = lastGeneratedData?.locations?.locations?.[idx];
+      if (l) { delete l.uploadedReference; renderPreProduction(); }
+    }
+  }
+
+  // Fetch with a timeout — resolves to null on timeout/error instead of throwing
+  async function fetchWithTimeout(url, options, timeoutMs = 90000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timer);
+      return res;
+    } catch (e) {
+      clearTimeout(timer);
+      console.warn(`Fetch ${url} failed/timed out:`, e.message);
+      return null;
+    }
+  }
+
+  async function approveAndBuildTimeline() {
+    if (!lastGeneratedData) return;
+    document.getElementById('resultContent').style.display = 'none';
+    document.getElementById('resultAiBar').classList.remove('visible');
+    const ppv = document.getElementById('preproductionView');
+    ppv.classList.add('visible');
+
+    // Show loading state
+    ppv.innerHTML = `<div class="pp-loading"><div class="spinner-lg"></div><div>Generating continuity plan...</div></div>`;
+
+    try {
+      // Step 1: Continuity plan (required — wardrobe & audio depend on it)
+      const cpRes = await fetchWithTimeout('/api/continuity-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          characters: lastGeneratedData.characters,
+          locations: lastGeneratedData.locations,
+          scenes: lastGeneratedData.scenes,
+          concept: lastGeneratedData.concept,
+          input: getFormInput(),
+        }),
+      });
+      let continuityPlan = { entries: [] };
+      if (cpRes && cpRes.ok) {
+        continuityPlan = await cpRes.json();
+      } else if (cpRes) {
+        const err = await cpRes.json().catch(() => ({}));
+        console.warn('Continuity plan failed:', err.error);
+      }
+
+      // Step 2: Show the UI IMMEDIATELY with characters & locations editable
+      // while wardrobe & audio load in the background
+      preProductionData = {
+        continuityPlan,
+        wardrobePlan: { wardrobeEntries: [] },
+        audioDesign: { globalThemes: [], sceneAudio: [] },
+        assetApprovals: {},
+        sceneSignoffs: {},
+        composedCharacters: {},
+        _wardrobeLoading: true,
+        _audioLoading: true,
+      };
+      lastGeneratedData.preProduction = preProductionData;
+
+      // Render immediately — user can start reviewing characters, locations, scene breakdown
+      renderPreProduction();
+
+      // Fetch wardrobe & audio in PARALLEL in the background
+      Promise.all([
+        fetchWithTimeout('/api/enhance-wardrobe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            characters: lastGeneratedData.characters,
+            continuityPlan,
+          }),
+        }).then(async (wRes) => {
+          if (wRes && wRes.ok) {
+            preProductionData.wardrobePlan = await wRes.json();
+          } else {
+            console.warn('Wardrobe enhancement failed or timed out — using defaults');
+          }
+          preProductionData._wardrobeLoading = false;
+          renderPreProduction();
+        }).catch(err => {
+          console.warn('Wardrobe failed:', err);
+          preProductionData._wardrobeLoading = false;
+          renderPreProduction();
+        }),
+
+        fetchWithTimeout('/api/audio-design', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            concept: lastGeneratedData.concept,
+            scenes: lastGeneratedData.scenes,
+            continuityPlan,
+          }),
+        }).then(async (adRes) => {
+          if (adRes && adRes.ok) {
+            preProductionData.audioDesign = await adRes.json();
+          } else {
+            console.warn('Audio design failed or timed out — using defaults');
+          }
+          preProductionData._audioLoading = false;
+          renderPreProduction();
+        }).catch(err => {
+          console.warn('Audio failed:', err);
+          preProductionData._audioLoading = false;
+          renderPreProduction();
+        }),
+      ]);
+    } catch (err) {
+      ppv.innerHTML = `<div class="pp-loading" style="color:var(--red)">${esc(err.message)}<br><button class="pp-back-btn" onclick="goBackToResults()" style="margin-top:1rem">Back to Results</button></div>`;
+    }
+  }
+
+  function getFormInput() {
+    return {
+      title: document.getElementById('title').value,
+      genre: document.getElementById('genre').value,
+      format: selectedFormat,
+      mainPlot: document.getElementById('mainPlot').value || undefined,
+      tone: document.getElementById('tone').value || undefined,
+      intendedEnding: document.getElementById('ending').value || undefined,
+      visualStyle: document.getElementById('visualStyle').value || undefined,
+      kidMode: document.getElementById('kidMode').checked,
+    };
+  }
+
+  function goBackToResults() {
+    document.getElementById('timelineView').classList.remove('visible');
+    document.getElementById('preproductionView').classList.remove('visible');
+    document.getElementById('resultContent').style.display = '';
+  }
+
+  function goBackToPreProduction() {
+    document.getElementById('timelineView').classList.remove('visible');
+    document.getElementById('preproductionView').classList.add('visible');
+  }
+
+  function proceedToTimeline() {
+    document.getElementById('preproductionView').classList.remove('visible');
+    const tv = document.getElementById('timelineView');
+    tv.classList.add('visible');
+    renderTimeline(lastGeneratedData);
+  }
+
+  function switchPPTab(tabName) {
+    document.querySelectorAll('.pp-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+    document.querySelectorAll('.pp-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tabName));
+  }
+
+  function toggleAssetApproval(key, btn) {
+    if (!preProductionData) return;
+    const current = preProductionData.assetApprovals[key];
+    if (current === 'accepted') {
+      delete preProductionData.assetApprovals[key];
+      btn.classList.remove('accepted');
+      btn.textContent = 'Accept';
+    } else {
+      preProductionData.assetApprovals[key] = 'accepted';
+      btn.classList.add('accepted');
+      btn.textContent = 'Accepted';
+    }
+    updateProceedButton();
+  }
+
+  function toggleSceneSignoff(sceneIdx, checkbox) {
+    if (!preProductionData) return;
+    preProductionData.sceneSignoffs[sceneIdx] = checkbox.checked;
+    const label = checkbox.closest('.pp-signoff');
+    if (label) label.classList.toggle('signed-off', checkbox.checked);
+    updateProceedButton();
+  }
+
+  function updateProceedButton() {
+    const btn = document.getElementById('ppProceedBtn');
+    if (!btn) return;
+    // Proceed is always available - sign-offs are optional guidance
+    btn.disabled = false;
+  }
+
+  // ── Image Generation (Gemini Nano Banana Pro) ──
+
+  async function generateCharacterImage(charIndex) {
+    const chars = lastGeneratedData?.characters?.characters || [];
+    const c = chars[charIndex];
+    if (!c) return;
+
+    const btn = event?.target;
+    const portrait = btn?.closest('.char-portrait');
+    if (btn) { btn.textContent = 'Generating...'; btn.disabled = true; }
+
+    try {
+      const style = lastGeneratedData?.concept?.visualStyleRecommendation || 'cinematic';
+      const payload = {
+        name: c.name,
+        appearance: c.appearance || {},
+        defaultOutfit: c.defaultOutfit || {},
+        style,
+      };
+      if (c.uploadedReference) payload.referenceImage = c.uploadedReference;
+      const res = await fetch('/api/generate-image/character', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+
+      // Replace placeholder with actual image
+      if (portrait) {
+        const placeholder = portrait.querySelector('.placeholder-icon');
+        if (placeholder) placeholder.remove();
+        let img = portrait.querySelector('.gen-portrait-img');
+        if (!img) {
+          img = document.createElement('img');
+          img.className = 'gen-portrait-img';
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:6px;';
+          portrait.insertBefore(img, portrait.firstChild);
+        }
+        img.src = 'data:' + (result.mimeType || 'image/png') + ';base64,' + result.base64;
+      }
+      // Store in data structure for composition pipeline
+      lastGeneratedData.characters.characters[charIndex].generatedPortrait = { base64: result.base64, mimeType: result.mimeType };
+      if (btn) { btn.textContent = 'Regenerate'; btn.disabled = false; }
+    } catch (err) {
+      if (btn) { btn.textContent = 'Generate Reference'; btn.disabled = false; }
+      alert('Image generation failed: ' + err.message);
+    }
+  }
+
+  async function generateLocationImage(locIndex) {
+    const locs = lastGeneratedData?.locations?.locations || [];
+    const l = locs[locIndex];
+    if (!l) return;
+
+    const btn = event?.target;
+    const preview = btn?.closest('.loc-preview');
+    if (btn) { btn.textContent = 'Generating...'; btn.disabled = true; }
+
+    try {
+      const style = lastGeneratedData?.concept?.visualStyleRecommendation || 'cinematic';
+      const payload = {
+        name: l.name,
+        type: l.type,
+        description: l.description,
+        interior: l.interior,
+        lightingCondition: l.lightingCondition,
+        mood: l.mood,
+        colorScheme: l.colorScheme,
+        keyFeatures: l.keyFeatures,
+        style,
+      };
+      if (l.uploadedReference) payload.referenceImage = l.uploadedReference;
+      const res = await fetch('/api/generate-image/location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+
+      if (preview) {
+        const placeholder = preview.querySelector('.placeholder-icon');
+        if (placeholder) placeholder.remove();
+        let img = preview.querySelector('.gen-bg-img');
+        if (!img) {
+          img = document.createElement('img');
+          img.className = 'gen-bg-img';
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:6px;';
+          preview.insertBefore(img, preview.firstChild);
+        }
+        img.src = 'data:' + (result.mimeType || 'image/png') + ';base64,' + result.base64;
+      }
+      // Store in data structure for composition pipeline
+      lastGeneratedData.locations.locations[locIndex].generatedBackground = { base64: result.base64, mimeType: result.mimeType };
+      if (btn) { btn.textContent = 'Regenerate'; btn.disabled = false; }
+    } catch (err) {
+      if (btn) { btn.textContent = 'Generate Background'; btn.disabled = false; }
+      alert('Image generation failed: ' + err.message);
+    }
+  }
+
+  async function generateOutfitImage(characterName, sceneIndex) {
+    const wp = preProductionData?.wardrobePlan?.wardrobeEntries || [];
+    const entry = wp.find(w => w.characterName === characterName && w.sceneIndex === sceneIndex);
+    if (!entry) { alert('No wardrobe data for this cell'); return; }
+
+    const btn = event?.target;
+    const cell = btn?.closest('.wardrobe-cell');
+    if (btn) { btn.textContent = '...'; btn.disabled = true; }
+
+    try {
+      const style = lastGeneratedData?.concept?.visualStyleRecommendation || 'cinematic';
+      const res = await fetch('/api/generate-image/outfit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          characterName: entry.characterName,
+          outfitName: entry.outfitName,
+          outfitDescription: entry.outfitDescription,
+          outfitDetails: entry.outfitDetails,
+          style,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+
+      if (cell) {
+        const thumb = cell.querySelector('.outfit-thumb');
+        if (thumb) {
+          thumb.innerHTML = '';
+          thumb.style.cssText = 'width:100%;aspect-ratio:1;border-radius:4px;overflow:hidden;margin-bottom:0.3rem;';
+          const img = document.createElement('img');
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+          img.src = 'data:' + (result.mimeType || 'image/png') + ';base64,' + result.base64;
+          thumb.appendChild(img);
+        }
+      }
+      // Store in data structure for composition pipeline
+      entry.generatedImage = { base64: result.base64, mimeType: result.mimeType };
+      if (btn) { btn.textContent = 'Regen'; btn.disabled = false; }
+    } catch (err) {
+      if (btn) { btn.textContent = 'Img'; btn.disabled = false; }
+      alert('Image generation failed: ' + err.message);
+    }
+  }
+
+  async function generateAllOutfits() {
+    const wp = preProductionData?.wardrobePlan?.wardrobeEntries || [];
+    if (wp.length === 0) { alert('No wardrobe entries found'); return; }
+
+    const btn = event?.target;
+    if (btn) { btn.disabled = true; }
+    let done = 0;
+
+    for (let i = 0; i < wp.length; i++) {
+      const entry = wp[i];
+      if (btn) btn.textContent = `Generating outfit ${i + 1}/${wp.length}...`;
+      try {
+        const style = lastGeneratedData?.concept?.visualStyleRecommendation || 'cinematic';
+        const res = await fetch('/api/generate-image/outfit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            characterName: entry.characterName,
+            outfitName: entry.outfitName,
+            outfitDescription: entry.outfitDescription,
+            outfitDetails: entry.outfitDetails,
+            style,
+          }),
+        });
+        const result = await res.json();
+        if (res.ok) {
+          entry.generatedImage = { base64: result.base64, mimeType: result.mimeType };
+          done++;
+        }
+      } catch (err) {
+        console.error('Outfit generation failed:', entry.characterName, err);
+      }
+    }
+
+    if (btn) { btn.textContent = `Generate All Outfits (${done}/${wp.length} done)`; btn.disabled = false; }
+    renderPreProduction();
+  }
+
+  async function regenerateAsset(assetType, assetId, context) {
+    const direction = prompt('Optional creative direction for regeneration:');
+    try {
+      const res = await fetch('/api/regenerate-asset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assetType, assetId, context, direction: direction || undefined }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+      alert('Regenerated! New description:\n\n' + (result.description || JSON.stringify(result, null, 2)));
+    } catch (err) {
+      alert('Regeneration failed: ' + err.message);
+    }
+  }
+
+  // ── Character Composition Pipeline ──
+
+  async function composeCharacterForScene(charName, sceneIdx) {
+    const chars = lastGeneratedData?.characters?.characters || [];
+    const character = chars.find(c => c.name === charName);
+    if (!character?.generatedPortrait) {
+      alert(`Generate a portrait for ${charName} first (Character Sheets tab).`);
+      return;
+    }
+
+    const wp = preProductionData?.wardrobePlan?.wardrobeEntries || [];
+    const wardrobeEntry = wp.find(w => w.characterName === charName && w.sceneIndex === sceneIdx);
+    const outfitRef = wardrobeEntry?.generatedImage || null;
+
+    const cp = preProductionData?.continuityPlan?.entries || [];
+    const sceneEntry = cp.find(e => e.sceneIndex === sceneIdx);
+    const scene = (lastGeneratedData?.scenes || [])[sceneIdx];
+    const charEntry = sceneEntry?.characters?.find(c => c.name === charName) || {};
+
+    const btn = event?.target;
+    if (btn) { btn.textContent = 'Composing...'; btn.disabled = true; }
+
+    try {
+      const style = lastGeneratedData?.concept?.visualStyleRecommendation || 'cinematic';
+      const res = await fetch('/api/generate-image/compose-character', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          characterName: charName,
+          portraitRef: character.generatedPortrait,
+          outfitRef,
+          accessoryRefs: [],
+          sceneContext: {
+            title: scene?.title || '',
+            locationName: sceneEntry?.locationName || scene?.locationName || '',
+            timeOfDay: sceneEntry?.timeOfDay || scene?.timeOfDay || '',
+            emotionalState: charEntry.emotionalState || '',
+            action: charEntry.continuityNotes || '',
+          },
+          pose: charEntry.pose || 'standing naturally',
+          style,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+
+      const key = charName + '-' + sceneIdx;
+      preProductionData.composedCharacters[key] = { base64: result.base64, mimeType: result.mimeType };
+
+      // Update thumbnail in the breakdown
+      const thumbEl = document.getElementById('compose-thumb-' + key.replace(/\s+/g, '_'));
+      if (thumbEl) {
+        thumbEl.innerHTML = `<img src="data:${result.mimeType};base64,${result.base64}" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">`;
+      }
+      if (btn) { btn.textContent = 'Recompose'; btn.disabled = false; }
+    } catch (err) {
+      if (btn) { btn.textContent = 'Compose'; btn.disabled = false; }
+      alert('Character composition failed: ' + err.message);
+    }
+  }
+
+  async function composeAllCharacters() {
+    const scenes = lastGeneratedData?.scenes || [];
+    const cp = preProductionData?.continuityPlan?.entries || [];
+    const chars = lastGeneratedData?.characters?.characters || [];
+    let composed = 0, skipped = 0, total = 0;
+
+    const btn = event?.target;
+    if (btn) { btn.textContent = 'Composing...'; btn.disabled = true; }
+
+    for (let si = 0; si < scenes.length; si++) {
+      const entry = cp.find(e => e.sceneIndex === si);
+      const sceneChars = entry?.characters || scenes[si]?.characters || [];
+      for (const ch of sceneChars) {
+        total++;
+        const character = chars.find(c => c.name === ch.name);
+        if (!character?.generatedPortrait) { skipped++; continue; }
+        try {
+          if (btn) btn.textContent = `Composing ${composed + 1}/${total}...`;
+          await composeCharacterForScene(ch.name, si);
+          composed++;
+        } catch { skipped++; }
+      }
+    }
+    if (btn) { btn.textContent = `Compose All (${composed} done)`; btn.disabled = false; }
+    if (skipped > 0) alert(`Composed ${composed} characters. Skipped ${skipped} (missing portrait or outfit reference).`);
+  }
+
+  // ── Shot Frame Generation Pipeline ──
+
+  async function generateShotFrames(sceneIdx, shotIdx) {
+    const scenes = lastGeneratedData?.scenes || [];
+    const shots = lastGeneratedData?.shots || {};
+    const sceneShots = shots[sceneIdx]?.shots || shots[String(sceneIdx)]?.shots || [];
+    const shot = sceneShots[shotIdx];
+    if (!shot) return;
+
+    const scene = scenes[sceneIdx];
+    const cp = preProductionData?.continuityPlan?.entries || [];
+    const sceneEntry = cp.find(e => e.sceneIndex === sceneIdx);
+    const loc = (lastGeneratedData?.locations?.locations || []).find(l => l.name === (sceneEntry?.locationName || scene?.locationName));
+    const style = lastGeneratedData?.concept?.visualStyleRecommendation || 'cinematic';
+
+    // Gather character references for this scene
+    // Priority: composed character > portrait fallback
+    const composedChars = [];
+    const sceneChars = sceneEntry?.characters || scene?.characters || [];
+    const allChars = lastGeneratedData?.characters?.characters || [];
+    for (const ch of sceneChars) {
+      const key = ch.name + '-' + sceneIdx;
+      const composed = preProductionData?.composedCharacters?.[key];
+      if (composed) {
+        composedChars.push({ name: ch.name, base64: composed.base64, mimeType: composed.mimeType });
+      } else {
+        // Fallback: use the character's portrait reference for consistency
+        const charData = allChars.find(c => c.name === ch.name);
+        if (charData?.generatedPortrait) {
+          composedChars.push({ name: ch.name, base64: charData.generatedPortrait.base64, mimeType: charData.generatedPortrait.mimeType });
+        }
+      }
+    }
+
+    const locBg = loc?.generatedBackground || null;
+
+    const btn = event?.target;
+    if (btn) { btn.textContent = 'Generating...'; btn.disabled = true; }
+
+    // Generate firstFrame
+    const frames = [shot.firstFrame, shot.lastFrame];
+    const frameLabels = ['firstFrame', 'lastFrame'];
+    let anyError = false;
+
+    try {
+      for (let fi = 0; fi < frames.length; fi++) {
+        const f = frames[fi];
+        if (!f) continue;
+        if (btn) btn.textContent = `Generating frame ${fi + 1}/2...`;
+        try {
+          const res = await fetch('/api/generate-image/shot-frame', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              frame: {
+                description: f.description || '',
+                backgroundDescription: scene?.title || '',
+                characters: (f.characters || sceneChars).map(c => ({
+                  name: c.name,
+                  pose: c.pose || 'natural',
+                  expression: c.expression || c.emotionalState || '',
+                  position: c.position || 'center',
+                  action: c.action || '',
+                })),
+                cameraAngle: shot.camera?.angle || 'eye level',
+                shotSize: shot.camera?.shotSize || shot.shotSize || 'medium',
+              },
+              references: {
+                composedCharacters: composedChars,
+                locationBackground: locBg ? { name: loc.name, base64: locBg.base64, mimeType: locBg.mimeType } : null,
+              },
+              style,
+            }),
+          });
+          const result = await res.json();
+          if (!res.ok) throw new Error(result.error);
+
+          // Store the generated frame
+          shot[frameLabels[fi]].generatedImage = { base64: result.base64, mimeType: result.mimeType };
+
+          // Update DOM
+          const frameEl = document.querySelector(`[data-scene="${sceneIdx}"][data-shot="${shotIdx}"] .timeline-frame.${fi === 0 ? 'first' : 'last'} .frame-img-placeholder`);
+          if (frameEl) {
+            frameEl.innerHTML = `<img src="data:${result.mimeType};base64,${result.base64}" style="width:100%;height:auto;border-radius:4px;">`;
+          }
+        } catch (err) {
+          anyError = true;
+          console.error(`Frame generation failed for ${frameLabels[fi]}:`, err);
+        }
+      }
+    } finally {
+      if (btn) { btn.textContent = anyError ? 'Retry Frames' : 'Regenerate Frames'; btn.disabled = false; }
+    }
+  }
+
+  async function generateAllFrames() {
+    const scenes = lastGeneratedData?.scenes || [];
+    const shots = lastGeneratedData?.shots || {};
+    let generated = 0, total = 0;
+
+    const btn = event?.target;
+    if (btn) { btn.disabled = true; }
+
+    // Count total
+    for (let i = 0; i < scenes.length; i++) {
+      const sceneShots = shots[i]?.shots || shots[String(i)]?.shots || [];
+      total += sceneShots.length;
+    }
+
+    for (let i = 0; i < scenes.length; i++) {
+      const sceneShots = shots[i]?.shots || shots[String(i)]?.shots || [];
+      for (let j = 0; j < sceneShots.length; j++) {
+        if (btn) btn.textContent = `Generating ${generated + 1}/${total}...`;
+        try {
+          await generateShotFrames(i, j);
+          generated++;
+        } catch (err) {
+          console.error('Frame generation failed:', err);
+        }
+      }
+    }
+
+    if (btn) { btn.textContent = `Generate All Images (${generated}/${total} done)`; btn.disabled = false; }
+  }
+
+  // ── Veo 3.1 Video Generation Pipeline ──
+
+  async function generateShotVideo(sceneIdx, shotIdx) {
+    const scenes = lastGeneratedData?.scenes || [];
+    const shots = lastGeneratedData?.shots || {};
+    const sceneShots = shots[sceneIdx]?.shots || shots[String(sceneIdx)]?.shots || [];
+    const shot = sceneShots[shotIdx];
+    if (!shot) return;
+
+    const scene = scenes[sceneIdx];
+    const ff = shot.firstFrame || {};
+    const lf = shot.lastFrame || {};
+
+    // Gather reference images (up to 3): composed characters + location
+    const referenceImages = [];
+    const cp = preProductionData?.continuityPlan?.entries || [];
+    const sceneEntry = cp.find(e => e.sceneIndex === sceneIdx);
+    const sceneChars = sceneEntry?.characters || scene?.characters || [];
+
+    const allChars = lastGeneratedData?.characters?.characters || [];
+    for (const ch of sceneChars) {
+      if (referenceImages.length >= 3) break;
+      const key = ch.name + '-' + sceneIdx;
+      const composed = preProductionData?.composedCharacters?.[key];
+      if (composed) {
+        referenceImages.push({ base64: composed.base64, mimeType: composed.mimeType });
+      } else {
+        // Fallback: use portrait reference for character consistency
+        const charData = allChars.find(c => c.name === ch.name);
+        if (charData?.generatedPortrait) {
+          referenceImages.push({ base64: charData.generatedPortrait.base64, mimeType: charData.generatedPortrait.mimeType });
+        }
+      }
+    }
+
+    // Build rich prompt with audio cues for Veo 3.1 native audio
+    let audioPrompt = '';
+    const ad = preProductionData?.audioDesign?.sceneAudio?.find(s => s.sceneIndex === sceneIdx);
+    if (ad) {
+      const sfx = (ad.soundEffects || []).map(s => s.description).join(', ');
+      if (ad.musicMood) audioPrompt += `Background music mood: ${ad.musicMood}. `;
+      if (sfx) audioPrompt += `Sound effects: ${sfx}. `;
+    }
+
+    // Character dialogue/action descriptions
+    const charActions = (ff.characters || sceneChars).map(c =>
+      `${c.name}: ${c.action || c.pose || ''}, expression: ${c.expression || c.emotionalState || ''}`
+    ).join('. ');
+
+    const visualStyle = lastGeneratedData?.concept?.visualStyleRecommendation || 'cinematic';
+    const prompt = `${shot.camera?.shotSize || 'medium'} shot, camera: ${shot.camera?.angle || 'eye level'}${shot.camera?.movement ? ', ' + shot.camera.movement : ''}.
+
+VISUAL STYLE: ${visualStyle}
+ALL visual choices (lighting, color grading, composition, atmosphere) MUST match this style direction.
+
+Scene: ${ff.description || scene.title || ''}
+Characters: ${charActions}
+${audioPrompt}
+${lf.description ? `The shot transitions to: ${lf.description}` : ''}
+Render in the "${visualStyle}" visual style throughout. Professional film production quality.`;
+
+    const btn = event?.target;
+    const container = btn?.closest('.timeline-shot');
+    const statusEl = container?.querySelector('.video-status');
+    if (btn) { btn.textContent = 'Starting...'; btn.disabled = true; }
+    if (statusEl) statusEl.textContent = 'Starting video generation...';
+
+    try {
+      // Start generation
+      const startRes = await fetch('/api/generate-video/shot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt,
+          firstFrame: ff.generatedImage || null,
+          lastFrame: lf.generatedImage || null,
+          referenceImages,
+          aspectRatio: '16:9',
+          resolution: '720p',
+        }),
+      });
+      const startData = await startRes.json();
+      if (!startRes.ok) throw new Error(startData.error);
+
+      const jobId = startData.jobId;
+      if (statusEl) statusEl.textContent = 'Generating video (this takes 1-6 min)...';
+
+      // Poll for completion
+      let done = false;
+      while (!done) {
+        await new Promise(r => setTimeout(r, 10000)); // poll every 10s
+        const statusRes = await fetch(`/api/generate-video/status/${jobId}`);
+        const statusData = await statusRes.json();
+
+        if (statusData.status === 'done') {
+          done = true;
+          // Store video URL on shot
+          shot.generatedVideoUrl = statusData.videoUrl;
+
+          // Show video player
+          const playerEl = container?.querySelector('.video-player-container');
+          if (playerEl) {
+            playerEl.innerHTML = `<video controls style="width:100%;border-radius:6px;margin-top:0.5rem;" src="${statusData.videoUrl}"></video>`;
+          }
+          if (statusEl) statusEl.textContent = 'Video ready!';
+          if (btn) { btn.textContent = 'Regenerate Video'; btn.disabled = false; }
+          // Update Final Cut playlist when individual video completes
+          buildFinalCutPlaylist();
+        } else if (statusData.status === 'error') {
+          throw new Error(statusData.error);
+        } else {
+          if (statusEl) statusEl.textContent = `Generating... ${statusData.elapsedSeconds || '?'}s elapsed`;
+        }
+      }
+    } catch (err) {
+      if (btn) { btn.textContent = 'Generate Video'; btn.disabled = false; }
+      if (statusEl) statusEl.textContent = 'Failed: ' + err.message;
+      console.error('Video generation failed:', err);
+    }
+  }
+
+  async function generateAllVideos() {
+    const scenes = lastGeneratedData?.scenes || [];
+    const shots = lastGeneratedData?.shots || {};
+    let generated = 0, total = 0;
+
+    const btn = event?.target;
+    if (btn) { btn.disabled = true; }
+
+    for (let i = 0; i < scenes.length; i++) {
+      const sceneShots = shots[i]?.shots || shots[String(i)]?.shots || [];
+      total += sceneShots.length;
+    }
+
+    for (let i = 0; i < scenes.length; i++) {
+      const sceneShots = shots[i]?.shots || shots[String(i)]?.shots || [];
+      for (let j = 0; j < sceneShots.length; j++) {
+        if (btn) btn.textContent = `Generating video ${generated + 1}/${total}...`;
+        try {
+          await generateShotVideo(i, j);
+          generated++;
+        } catch (err) {
+          console.error('Video generation failed:', err);
+        }
+      }
+    }
+
+    if (btn) { btn.textContent = `Generate All Videos (${generated}/${total} done)`; btn.disabled = false; }
+    // Rebuild Final Cut playlist so it picks up the new video URLs
+    buildFinalCutPlaylist();
+    // Update Final Cut section counts
+    const fcSection = document.getElementById('finalCutSection');
+    if (fcSection) {
+      const statusEl = fcSection.querySelector('span');
+      if (statusEl) {
+        statusEl.style.color = generated === total ? 'var(--green)' : 'var(--yellow)';
+        statusEl.textContent = `${generated}/${total} clips ready`;
+      }
+      // Enable/disable buttons
+      fcSection.querySelectorAll('.final-cut-btn.play, .final-cut-btn.download-all').forEach(b => b.disabled = generated === 0);
+      const stitchBtn = fcSection.querySelector('.final-cut-btn.download-stitch');
+      if (stitchBtn) stitchBtn.disabled = generated < 2;
+      // Update download count
+      const dlBtn = fcSection.querySelector('.final-cut-btn.download-all');
+      if (dlBtn) dlBtn.textContent = `Download All Clips (${generated})`;
+    }
+  }
+
+  function toggleAudioEnabled(sceneIdx, type, checkbox) {
+    if (!preProductionData?.audioDesign?.sceneAudio) return;
+    const sa = preProductionData.audioDesign.sceneAudio.find(s => s.sceneIndex === sceneIdx);
+    if (!sa) return;
+    if (type === 'music') sa.musicEnabled = checkbox.checked;
+    else if (type === 'sfx') sa.sfxEnabled = checkbox.checked;
+  }
+
+  function renderPreProduction() {
+    const ppv = document.getElementById('preproductionView');
+    const data = lastGeneratedData;
+    const pp = preProductionData;
+    if (!data || !pp) return;
+
+    const chars = data.characters?.characters || [];
+    const locs = data.locations?.locations || [];
+    const scenes = data.scenes || [];
+    const cp = pp.continuityPlan?.entries || [];
+    const wp = pp.wardrobePlan?.wardrobeEntries || [];
+    const ad = pp.audioDesign || {};
+
+    let html = `
+      <div class="preproduction-header">
+        <h2>Pre-Production</h2>
+        <button class="back-btn" onclick="goBackToResults()">Back to Results</button>
+      </div>
+      <div class="pp-tabs">
+        <button class="pp-tab active" data-tab="characters" onclick="switchPPTab('characters')">Character Sheets</button>
+        <button class="pp-tab" data-tab="wardrobe" onclick="switchPPTab('wardrobe')">Wardrobe${pp._wardrobeLoading ? ' <span class="tab-loading-dot"></span>' : ''}</button>
+        <button class="pp-tab" data-tab="locations" onclick="switchPPTab('locations')">Locations</button>
+        <button class="pp-tab" data-tab="audio" onclick="switchPPTab('audio')">Audio Design${pp._audioLoading ? ' <span class="tab-loading-dot"></span>' : ''}</button>
+        <button class="pp-tab" data-tab="breakdown" onclick="switchPPTab('breakdown')">Scene Breakdown</button>
+      </div>`;
+
+    // ── Tab 1: Character Sheets ──
+    html += `<div class="pp-panel active" data-panel="characters">`;
+    chars.forEach((c, i) => {
+      const app = c.appearance || {};
+      const initials = c.name.split(' ').map(w => w[0]).join('').slice(0, 2);
+      const outfit = c.defaultOutfit || {};
+      const accessories = c.accessories || [];
+      const approvalKey = 'char-' + i;
+      const isAccepted = pp.assetApprovals[approvalKey] === 'accepted';
+      const isLocked = ppLockedItems.has('char-' + i);
+      const hasUploadedRef = !!c.uploadedReference;
+
+      html += `
+        <div class="pp-char-sheet pp-item-card ${isLocked ? 'pp-locked' : ''}" data-pp-type="char" data-pp-idx="${i}">
+          ${ppItemBar('char', i)}
+          <div class="pp-item-view">
+            <div class="char-top">
+              <div class="char-portrait">
+                ${c.generatedPortrait ? `<img class="gen-portrait-img" src="data:${c.generatedPortrait.mimeType};base64,${c.generatedPortrait.base64}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">` : `<div class="placeholder-icon">${esc(initials)}</div>`}
+                <button class="gen-ref-btn" onclick="generateCharacterImage(${i})">${c.generatedPortrait ? 'Regenerate' : 'Generate Reference'}</button>
+              </div>
+              <div class="char-info pp-char-info">
+                <h3>${esc(c.name)}</h3>
+                <div class="role-tag">${esc(c.role)} &middot; ${esc(c.importance)}</div>
+                ${hasUploadedRef ? `<div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.3rem;"><img class="pp-ref-thumb" src="data:${c.uploadedReference.mimeType};base64,${c.uploadedReference.base64}"><span style="font-size:0.65rem;color:var(--cyan)">Ref uploaded</span><button style="font-size:0.55rem;background:none;border:1px solid var(--red);color:var(--red);border-radius:3px;cursor:pointer;padding:0 0.2rem;" onclick="event.stopPropagation();clearPPUpload('char',${i})">x</button></div>` : ''}
+                <div class="pp-appearance-grid">
+                  <div class="pp-attr"><div class="lbl">Age</div>${app.age || '?'}</div>
+                  <div class="pp-attr"><div class="lbl">Gender</div>${esc(app.gender || '')}</div>
+                  <div class="pp-attr"><div class="lbl">Ethnicity</div>${esc(app.ethnicity || '')}</div>
+                  <div class="pp-attr"><div class="lbl">Height</div>${esc(app.height || '')}</div>
+                  <div class="pp-attr"><div class="lbl">Build</div>${esc(app.build || '')}</div>
+                  <div class="pp-attr"><div class="lbl">Skin Tone</div>${esc(app.skinTone || '')}</div>
+                  <div class="pp-attr"><div class="lbl">Hair</div>${esc(app.hairColor || '')} ${esc(app.hairStyle || '')}</div>
+                  <div class="pp-attr"><div class="lbl">Eyes</div>${esc(app.eyeColor || '')}</div>
+                  <div class="pp-attr"><div class="lbl">Facial Hair</div>${esc(app.facialHair || 'none')}</div>
+                </div>
+                ${(app.distinctiveFeatures || []).length > 0 ? `<div style="margin-top:0.4rem;font-size:0.78rem;color:var(--text2)">Distinctive: ${(app.distinctiveFeatures || []).map(f => esc(f)).join(', ')}</div>` : ''}
+              </div>
+            </div>
+            <div class="pp-outfit-summary">
+              <h4>Default Outfit</h4>
+              ${outfit.top ? `<div>Top: ${esc(outfit.top.type || '')} (${esc(outfit.top.color || '')}${outfit.top.material ? ', ' + esc(outfit.top.material) : ''})</div>` : ''}
+              ${outfit.bottom ? `<div>Bottom: ${esc(outfit.bottom.type || '')} (${esc(outfit.bottom.color || '')})</div>` : ''}
+              ${outfit.footwear ? `<div>Footwear: ${esc(outfit.footwear.type || '')} (${esc(outfit.footwear.color || '')})</div>` : ''}
+            </div>
+            ${accessories.length > 0 ? `
+              <div class="pp-accessories-list">
+                ${accessories.map(a => `<span class="pp-accessory-chip" title="${esc(a.description || '')}">${esc(a.name || a.type || '')} (${esc(a.wornWhen || 'always')})</span>`).join('')}
+              </div>` : ''}
+            <div class="pp-asset-actions">
+              <button class="pp-accept-btn ${isAccepted ? 'accepted' : ''}" onclick="toggleAssetApproval('${approvalKey}', this)">${isAccepted ? 'Accepted' : 'Accept'}</button>
+            </div>
+          </div>
+          <div class="pp-edit-form">
+            <div class="ef-row"><span class="ef-label">Name</span><input data-field="name" value="${escAttr(c.name)}"></div>
+            <div class="ef-row"><span class="ef-label">Age</span><input data-field="age" value="${escAttr(app.age || '')}"></div>
+            <div class="ef-row"><span class="ef-label">Gender</span><input data-field="gender" value="${escAttr(app.gender || '')}"></div>
+            <div class="ef-row"><span class="ef-label">Ethnicity</span><input data-field="ethnicity" value="${escAttr(app.ethnicity || '')}"></div>
+            <div class="ef-row"><span class="ef-label">Height</span><input data-field="height" value="${escAttr(app.height || '')}"></div>
+            <div class="ef-row"><span class="ef-label">Build</span><input data-field="build" value="${escAttr(app.build || '')}"></div>
+            <div class="ef-row"><span class="ef-label">Skin Tone</span><input data-field="skinTone" value="${escAttr(app.skinTone || '')}"></div>
+            <div class="ef-row"><span class="ef-label">Hair Color</span><input data-field="hairColor" value="${escAttr(app.hairColor || '')}"></div>
+            <div class="ef-row"><span class="ef-label">Hair Style</span><input data-field="hairStyle" value="${escAttr(app.hairStyle || '')}"></div>
+            <div class="ef-row"><span class="ef-label">Eye Color</span><input data-field="eyeColor" value="${escAttr(app.eyeColor || '')}"></div>
+            <div class="ef-row"><span class="ef-label">Facial Hair</span><input data-field="facialHair" value="${escAttr(app.facialHair || 'none')}"></div>
+            <div class="ef-row"><span class="ef-label">Distinctive Features (comma-separated)</span><input data-field="distinctiveFeatures" value="${escAttr((app.distinctiveFeatures || []).join(', '))}"></div>
+            <div class="edit-actions">
+              <button class="cancel-edit-btn" onclick="event.stopPropagation();cancelPPEdit('char',${i})">Cancel</button>
+              <button class="save-edit-btn" onclick="event.stopPropagation();savePPEdit('char',${i})">Save</button>
+            </div>
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+
+    // ── Tab 2: Wardrobe ──
+    html += `<div class="pp-panel" data-panel="wardrobe">`;
+    if (pp._wardrobeLoading) {
+      html += `<div class="pp-loading" style="padding:3rem 0"><div class="spinner-lg"></div><div>Generating wardrobe plan...</div><div style="font-size:0.75rem;color:var(--text2);margin-top:0.5rem">You can review Characters and Locations while this loads</div></div>`;
+    } else if (scenes.length > 0 && chars.length > 0) {
+      const outfitCount = wp.length;
+      const outfitsDone = wp.filter(w => w.generatedImage).length;
+      html += `
+        <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+          <button class="generate-all-images-btn" onclick="generateAllOutfits()" style="margin-bottom:0;">
+            Generate All Outfits (${outfitsDone}/${outfitCount} done)
+          </button>
+        </div>`;
+      html += `<div style="overflow-x:auto"><table class="wardrobe-table"><thead><tr><th>Character</th>`;
+      scenes.forEach((s, i) => { html += `<th>S${i + 1}: ${esc(s.title?.slice(0, 20) || '')}</th>`; });
+      html += `</tr></thead><tbody>`;
+
+      let outfitGlobalIdx = 0;
+      chars.forEach((c) => {
+        html += `<tr><td style="font-weight:600;white-space:nowrap">${esc(c.name)}</td>`;
+        scenes.forEach((s, si) => {
+          const entry = cp.find(e => e.sceneIndex === si);
+          const charEntry = entry?.characters?.find(ch => ch.name === c.name);
+          const wardrobeMatch = wp.find(w => w.characterName === c.name && w.sceneIndex === si);
+          const wpIdx = wp.indexOf(wardrobeMatch);
+
+          if (charEntry) {
+            const outfitName = wardrobeMatch?.outfitName || charEntry.outfit || 'Default';
+            const outfitDesc = wardrobeMatch?.outfitDescription || charEntry.outfit || '';
+            const changed = charEntry.outfitChanged;
+            const approvalKey = `outfit-${c.name}-${si}`;
+            const isAccepted = pp.assetApprovals[approvalKey] === 'accepted';
+            const cellLockKey = wpIdx >= 0 ? wpIdx : outfitGlobalIdx;
+            const isCellLocked = ppLockedItems.has('outfit-' + cellLockKey);
+
+            html += `<td>
+              <div class="wardrobe-cell pp-item-card ${isCellLocked ? 'pp-locked' : ''}" data-pp-type="outfit" data-pp-idx="${cellLockKey}" style="border:1px solid ${changed ? 'var(--yellow)' : 'var(--border)'}; position:relative;">
+                <div class="pp-item-toolbar" style="top:0.2rem;right:0.2rem;">
+                  <button class="pp-lock-btn ${isCellLocked ? 'locked' : ''}" onclick="event.stopPropagation();togglePPLock('outfit',${cellLockKey},this)" title="${isCellLocked ? 'Unlock' : 'Lock'}" style="font-size:0.5rem;padding:0.08rem 0.15rem;">${isCellLocked ? '🔒' : '🔓'}</button>
+                  <button onclick="event.stopPropagation();togglePPEdit('outfit',${cellLockKey})" title="Edit" style="font-size:0.5rem;padding:0.08rem 0.15rem;">✏️</button>
+                  <button onclick="event.stopPropagation();ppAiRegen('outfit',${cellLockKey})" title="AI regen" style="font-size:0.5rem;padding:0.08rem 0.15rem;">✨</button>
+                </div>
+                <div class="pp-item-view">
+                  <div class="outfit-thumb">${wardrobeMatch?.generatedImage ? `<img src="data:${wardrobeMatch.generatedImage.mimeType};base64,${wardrobeMatch.generatedImage.base64}" style="width:100%;height:100%;object-fit:cover;">` : '👔'}</div>
+                  <div class="outfit-name">${esc(outfitName)}</div>
+                  <div class="outfit-desc">${esc(outfitDesc.slice(0, 60))}</div>
+                  ${changed ? '<div style="font-size:0.6rem;color:var(--yellow);margin-top:0.2rem">Changed</div>' : ''}
+                  <div class="pp-asset-actions" style="margin-top:0.3rem;display:flex;gap:0.3rem;">
+                    <button class="pp-accept-btn ${isAccepted ? 'accepted' : ''}" style="font-size:0.65rem;padding:0.2rem 0.5rem" onclick="event.stopPropagation();toggleAssetApproval('${approvalKey}',this)">${isAccepted ? 'OK' : 'Accept'}</button>
+                    <button class="shot-gen-btn" style="flex:1;font-size:0.65rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,var(--accent),#4f46e5);color:white;border:none;border-radius:5px;cursor:pointer;font-family:inherit;font-weight:600;" onclick="event.stopPropagation();generateOutfitImage('${esc(c.name)}',${si})">${wardrobeMatch?.generatedImage ? 'Regen Outfit' : 'Generate Outfit'}</button>
+                  </div>
+                </div>
+                <div class="pp-edit-form">
+                  <div class="ef-row"><span class="ef-label">Outfit Name</span><input data-field="outfitName" value="${escAttr(outfitName)}" style="font-size:0.65rem;padding:0.2rem 0.3rem;"></div>
+                  <div class="ef-row"><span class="ef-label">Description</span><textarea data-field="outfitDescription" style="font-size:0.65rem;padding:0.2rem 0.3rem;min-height:30px;">${esc(outfitDesc)}</textarea></div>
+                  <div class="edit-actions">
+                    <button class="cancel-edit-btn" onclick="event.stopPropagation();cancelPPEdit('outfit',${cellLockKey})" style="font-size:0.6rem;padding:0.1rem 0.3rem;">Cancel</button>
+                    <button class="save-edit-btn" onclick="event.stopPropagation();savePPEdit('outfit',${cellLockKey})" style="font-size:0.6rem;padding:0.1rem 0.3rem;">Save</button>
+                  </div>
+                </div>
+              </div>
+            </td>`;
+            outfitGlobalIdx++;
+          } else {
+            html += `<td><div style="color:var(--text2);font-size:0.7rem;opacity:0.4;text-align:center">--</div></td>`;
+          }
+        });
+        html += `</tr>`;
+      });
+      html += `</tbody></table></div>`;
+    } else {
+      html += `<div style="color:var(--text2);padding:2rem;text-align:center">No wardrobe data available.</div>`;
+    }
+    html += `</div>`;
+
+    // ── Tab 3: Locations ──
+    html += `<div class="pp-panel" data-panel="locations">`;
+    locs.forEach((l, i) => {
+      const scenesUsingLoc = scenes.filter(s => s.locationName === l.name).map(s => s.title);
+      const approvalKey = 'loc-' + i;
+      const isAccepted = pp.assetApprovals[approvalKey] === 'accepted';
+      const isLocked = ppLockedItems.has('loc-' + i);
+      const hasUploadedRef = !!l.uploadedReference;
+
+      html += `
+        <div class="pp-location-sheet pp-item-card ${isLocked ? 'pp-locked' : ''}" data-pp-type="loc" data-pp-idx="${i}">
+          ${ppItemBar('loc', i)}
+          <div class="pp-item-view">
+            <div class="loc-top">
+              <div class="loc-preview">
+                ${l.generatedBackground ? `<img class="gen-bg-img" src="data:${l.generatedBackground.mimeType};base64,${l.generatedBackground.base64}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">` : `<div class="placeholder-icon">🏞</div>`}
+                <button class="gen-bg-btn" onclick="generateLocationImage(${i})">${l.generatedBackground ? 'Regenerate' : 'Generate Background'}</button>
+              </div>
+              <div class="loc-info">
+                <h3>${esc(l.name)}</h3>
+                ${hasUploadedRef ? `<div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.3rem;"><img class="pp-ref-thumb" src="data:${l.uploadedReference.mimeType};base64,${l.uploadedReference.base64}"><span style="font-size:0.65rem;color:var(--cyan)">Ref uploaded</span><button style="font-size:0.55rem;background:none;border:1px solid var(--red);color:var(--red);border-radius:3px;cursor:pointer;padding:0 0.2rem;" onclick="event.stopPropagation();clearPPUpload('loc',${i})">x</button></div>` : ''}
+                <div class="loc-meta">
+                  <span>${esc(l.type)}</span>
+                  <span>${l.interior ? 'Interior' : 'Exterior'}</span>
+                  <span>${esc(l.lightingCondition || '')}</span>
+                  <span>${esc(l.mood || '')}</span>
+                </div>
+                <div class="loc-desc">${esc(l.description)}</div>
+              </div>
+            </div>
+            ${(l.colorScheme || []).length > 0 ? `<div class="color-swatches" style="margin-bottom:0.5rem">${l.colorScheme.map(c => `<div class="swatch" style="background:${c}" title="${c}"></div>`).join('')}</div>` : ''}
+            <div class="loc-scenes">Used in: ${scenesUsingLoc.length > 0 ? scenesUsingLoc.map(t => esc(t)).join(', ') : 'None'}</div>
+            <div class="pp-asset-actions">
+              <button class="pp-accept-btn ${isAccepted ? 'accepted' : ''}" onclick="toggleAssetApproval('${approvalKey}', this)">${isAccepted ? 'Accepted' : 'Accept'}</button>
+            </div>
+          </div>
+          <div class="pp-edit-form">
+            <div class="ef-row"><span class="ef-label">Name</span><input data-field="name" value="${escAttr(l.name)}"></div>
+            <div class="ef-row"><span class="ef-label">Type</span><input data-field="type" value="${escAttr(l.type)}"></div>
+            <div class="ef-row"><span class="ef-label">Interior/Exterior</span><select data-field="interior"><option value="true" ${l.interior ? 'selected' : ''}>Interior</option><option value="false" ${!l.interior ? 'selected' : ''}>Exterior</option></select></div>
+            <div class="ef-row"><span class="ef-label">Description</span><textarea data-field="description" style="min-height:60px">${esc(l.description)}</textarea></div>
+            <div class="ef-row"><span class="ef-label">Lighting</span><input data-field="lightingCondition" value="${escAttr(l.lightingCondition || '')}"></div>
+            <div class="ef-row"><span class="ef-label">Mood</span><input data-field="mood" value="${escAttr(l.mood || '')}"></div>
+            <div class="ef-row"><span class="ef-label">Color Scheme (comma-separated)</span><input data-field="colorScheme" value="${escAttr((l.colorScheme || []).join(', '))}"></div>
+            <div class="ef-row"><span class="ef-label">Key Features (comma-separated)</span><input data-field="keyFeatures" value="${escAttr((l.keyFeatures || []).join(', '))}"></div>
+            <div class="edit-actions">
+              <button class="cancel-edit-btn" onclick="event.stopPropagation();cancelPPEdit('loc',${i})">Cancel</button>
+              <button class="save-edit-btn" onclick="event.stopPropagation();savePPEdit('loc',${i})">Save</button>
+            </div>
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+
+    // ── Tab 4: Audio Design ──
+    html += `<div class="pp-panel" data-panel="audio">`;
+    if (pp._audioLoading) {
+      html += `<div class="pp-loading" style="padding:3rem 0"><div class="spinner-lg"></div><div>Designing audio &amp; soundtrack...</div><div style="font-size:0.75rem;color:var(--text2);margin-top:0.5rem">You can review Characters and Locations while this loads</div></div></div>`;
+    }
+    const globalThemes = ad.globalThemes || [];
+    if (globalThemes.length > 0) {
+      html += `<div style="margin-bottom:1.5rem"><h3 style="font-size:0.95rem;margin-bottom:0.8rem">Global Music Themes</h3>`;
+      globalThemes.forEach((theme, i) => {
+        const isThemeLocked = ppLockedItems.has('audio-theme-' + i);
+        html += `
+          <div class="pp-char-sheet pp-item-card ${isThemeLocked ? 'pp-locked' : ''}" data-pp-type="audio-theme" data-pp-idx="${i}" style="margin-bottom:0.8rem;position:relative;">
+            <div class="pp-item-toolbar">
+              <button class="pp-lock-btn ${isThemeLocked ? 'locked' : ''}" onclick="event.stopPropagation();togglePPLock('audio-theme',${i},this)" title="${isThemeLocked ? 'Unlock' : 'Lock'}">${isThemeLocked ? '🔒' : '🔓'}</button>
+              <button onclick="event.stopPropagation();ppAiRegen('audio-theme',${i})" title="AI regenerate">✨</button>
+              <button onclick="event.stopPropagation();togglePPEdit('audio-theme',${i})" title="Edit">✏️</button>
+            </div>
+            <div class="pp-item-view">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem">
+                <h4 style="font-size:0.9rem">${esc(theme.name || 'Theme ' + (i+1))}</h4>
+                <span style="font-size:0.7rem;color:var(--text2);background:var(--surface2);padding:0.15rem 0.5rem;border-radius:4px">${esc(theme.mood || '')}</span>
+              </div>
+              <p style="font-size:0.8rem;color:var(--text2);margin-bottom:0.4rem">${esc(theme.description || '')}</p>
+              ${theme.tempo ? `<div style="font-size:0.75rem;color:var(--text2)">Tempo: ${esc(theme.tempo)} | Genre: ${esc(theme.genre || '')} | Instruments: ${esc((theme.instruments || []).join(', '))}</div>` : ''}
+              ${theme.generationPrompt ? `<div style="margin-top:0.4rem;background:var(--bg);border-radius:6px;padding:0.5rem;font-size:0.72rem;color:var(--cyan);font-family:monospace">Prompt: "${esc(theme.generationPrompt)}"</div>` : ''}
+              <div style="font-size:0.7rem;color:var(--text2);margin-top:0.3rem">Applies to: ${esc((theme.appliesTo || []).join(', ') || 'All scenes')}</div>
+            </div>
+            <div class="pp-edit-form">
+              <div class="ef-row"><span class="ef-label">Name</span><input data-field="name" value="${escAttr(theme.name || '')}"></div>
+              <div class="ef-row"><span class="ef-label">Mood</span><input data-field="mood" value="${escAttr(theme.mood || '')}"></div>
+              <div class="ef-row"><span class="ef-label">Description</span><textarea data-field="description">${esc(theme.description || '')}</textarea></div>
+              <div class="ef-row"><span class="ef-label">Tempo</span><input data-field="tempo" value="${escAttr(theme.tempo || '')}"></div>
+              <div class="ef-row"><span class="ef-label">Genre</span><input data-field="genre" value="${escAttr(theme.genre || '')}"></div>
+              <div class="ef-row"><span class="ef-label">Instruments (comma-separated)</span><input data-field="instruments" value="${escAttr((theme.instruments || []).join(', '))}"></div>
+              <div class="ef-row"><span class="ef-label">Generation Prompt</span><textarea data-field="generationPrompt">${esc(theme.generationPrompt || '')}</textarea></div>
+              <div class="edit-actions">
+                <button class="cancel-edit-btn" onclick="event.stopPropagation();cancelPPEdit('audio-theme',${i})">Cancel</button>
+                <button class="save-edit-btn" onclick="event.stopPropagation();savePPEdit('audio-theme',${i})">Save</button>
+              </div>
+            </div>
+          </div>`;
+      });
+      html += `</div>`;
+    }
+
+    const sceneAudio = ad.sceneAudio || [];
+    html += `<h3 style="font-size:0.95rem;margin-bottom:0.8rem">Per-Scene Audio</h3>`;
+    scenes.forEach((s, si) => {
+      const sa = sceneAudio.find(a => a.sceneIndex === si) || {};
+      const musicEnabled = sa.musicEnabled !== false;
+      const sfxEnabled = sa.sfxEnabled !== false;
+      const isSceneAudioLocked = ppLockedItems.has('audio-scene-' + si);
+
+      html += `
+        <div class="pp-scene-breakdown pp-item-card ${isSceneAudioLocked ? 'pp-locked' : ''}" data-pp-type="audio-scene" data-pp-idx="${si}" style="margin-bottom:0.8rem;position:relative;">
+          <div class="pp-item-toolbar">
+            <button class="pp-lock-btn ${isSceneAudioLocked ? 'locked' : ''}" onclick="event.stopPropagation();togglePPLock('audio-scene',${si},this)" title="${isSceneAudioLocked ? 'Unlock' : 'Lock'}">${isSceneAudioLocked ? '🔒' : '🔓'}</button>
+            <button onclick="event.stopPropagation();ppAiRegen('audio-scene',${si})" title="AI regenerate">✨</button>
+            <button onclick="event.stopPropagation();togglePPEdit('audio-scene',${si})" title="Edit">✏️</button>
+          </div>
+          <div class="pp-item-view">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+            <h3 style="font-size:0.9rem">S${si + 1}: ${esc(s.title)}</h3>
+            <div style="display:flex;gap:0.8rem;align-items:center">
+              <label style="display:flex;align-items:center;gap:0.3rem;font-size:0.72rem;color:var(--text2);cursor:pointer">
+                <input type="checkbox" ${musicEnabled ? 'checked' : ''} onchange="toggleAudioEnabled(${si},'music',this)" style="width:14px;height:14px;accent-color:var(--accent)"> Music
+              </label>
+              <label style="display:flex;align-items:center;gap:0.3rem;font-size:0.72rem;color:var(--text2);cursor:pointer">
+                <input type="checkbox" ${sfxEnabled ? 'checked' : ''} onchange="toggleAudioEnabled(${si},'sfx',this)" style="width:14px;height:14px;accent-color:var(--accent)"> SFX
+              </label>
+            </div>
+          </div>
+          ${sa.musicTheme ? `
+            <div style="background:var(--surface2);border-radius:6px;padding:0.5rem;margin-bottom:0.4rem">
+              <div style="font-size:0.7rem;color:var(--text2);text-transform:uppercase;margin-bottom:0.2rem">Music</div>
+              <div style="font-size:0.8rem">${esc(sa.musicTheme)} ${sa.musicContinuesFromPrev ? '<span style="color:var(--yellow);font-size:0.65rem">(continues from prev)</span>' : ''}</div>
+              ${sa.musicPrompt ? `<div style="font-size:0.68rem;color:var(--cyan);font-family:monospace;margin-top:0.2rem">Prompt: "${esc(sa.musicPrompt)}"</div>` : ''}
+              <div style="font-size:0.68rem;color:var(--text2);margin-top:0.2rem">Action: ${esc(sa.musicAction || 'continue')} | Mood: ${esc(sa.musicMood || s.musicMood || '')}</div>
+            </div>` : '<div style="font-size:0.75rem;color:var(--text2);opacity:0.5;margin-bottom:0.4rem">No music assigned</div>'}
+          ${(sa.soundEffects || []).length > 0 ? `
+            <div style="background:var(--surface2);border-radius:6px;padding:0.5rem">
+              <div style="font-size:0.7rem;color:var(--text2);text-transform:uppercase;margin-bottom:0.2rem">Sound Effects</div>
+              ${sa.soundEffects.map(sfx => `
+                <div style="font-size:0.78rem;margin-bottom:0.2rem">
+                  <span style="color:var(--text)">${esc(sfx.name || sfx.description)}</span>
+                  <span style="color:var(--text2);font-size:0.65rem"> at ${sfx.triggerPoint || '?'}s, ${sfx.volume || 'normal'}</span>
+                  ${sfx.generationPrompt ? `<div style="font-size:0.65rem;color:var(--cyan);font-family:monospace">Prompt: "${esc(sfx.generationPrompt)}"</div>` : ''}
+                </div>`).join('')}
+            </div>` : '<div style="font-size:0.75rem;color:var(--text2);opacity:0.5">No sound effects</div>'}
+          </div>
+          <div class="pp-edit-form">
+            <div class="ef-row"><span class="ef-label">Music Theme</span><input data-field="musicTheme" value="${escAttr(sa.musicTheme || '')}"></div>
+            <div class="ef-row"><span class="ef-label">Music Prompt</span><textarea data-field="musicPrompt">${esc(sa.musicPrompt || '')}</textarea></div>
+            <div class="ef-row"><span class="ef-label">Music Mood</span><input data-field="musicMood" value="${escAttr(sa.musicMood || s.musicMood || '')}"></div>
+            <div class="ef-row"><span class="ef-label">Music Action</span><select data-field="musicAction"><option value="continue" ${(sa.musicAction||'continue')==='continue'?'selected':''}>Continue</option><option value="start" ${sa.musicAction==='start'?'selected':''}>Start</option><option value="stop" ${sa.musicAction==='stop'?'selected':''}>Stop</option><option value="transition" ${sa.musicAction==='transition'?'selected':''}>Transition</option></select></div>
+            <div class="edit-actions">
+              <button class="cancel-edit-btn" onclick="event.stopPropagation();cancelPPEdit('audio-scene',${si})">Cancel</button>
+              <button class="save-edit-btn" onclick="event.stopPropagation();savePPEdit('audio-scene',${si})">Save</button>
+            </div>
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+
+    // ── Tab 5: Scene Breakdown ──
+    html += `<div class="pp-panel" data-panel="breakdown">`;
+    html += `<div style="margin-bottom:1rem;display:flex;justify-content:flex-end;">
+      <button class="gen-ref-btn" onclick="composeAllCharacters()" style="font-size:0.8rem;padding:0.4rem 1rem;">Compose All Characters</button>
+    </div>`;
+    scenes.forEach((s, si) => {
+      const entry = cp.find(e => e.sceneIndex === si);
+      const prevEntry = si > 0 ? cp.find(e => e.sceneIndex === si - 1) : null;
+      const isSignedOff = pp.sceneSignoffs[si] === true;
+      const sceneChars = entry?.characters || s.characters || [];
+      const isBreakdownLocked = ppLockedItems.has('breakdown-' + si);
+
+      html += `
+        <div class="pp-scene-breakdown pp-item-card ${isBreakdownLocked ? 'pp-locked' : ''}" data-pp-type="breakdown" data-pp-idx="${si}" style="position:relative;">
+          <div class="pp-item-toolbar">
+            <button class="pp-lock-btn ${isBreakdownLocked ? 'locked' : ''}" onclick="event.stopPropagation();togglePPLock('breakdown',${si},this)" title="${isBreakdownLocked ? 'Unlock' : 'Lock'}">${isBreakdownLocked ? '🔒' : '🔓'}</button>
+          </div>
+          <div class="slugline-tag">${esc(s.slugline)}</div>
+          <h3>Scene ${si + 1}: ${esc(s.title)}</h3>
+          <div class="breakdown-grid">
+            <div class="bd-col">
+              <h4>Characters</h4>
+              ${sceneChars.map(ch => {
+                const charObj = chars.find(c => c.name === ch.name);
+                const hasPortrait = !!charObj?.generatedPortrait;
+                const wardrobeEntry = wp.find(w => w.characterName === ch.name && w.sceneIndex === si);
+                const hasOutfit = !!wardrobeEntry?.generatedImage;
+                const composeKey = (ch.name + '-' + si).replace(/\s+/g, '_');
+                const composed = pp.composedCharacters[ch.name + '-' + si];
+                return `
+                <div style="margin-bottom:0.6rem;padding:0.4rem;background:rgba(255,255,255,0.03);border-radius:6px;">
+                  <p style="margin:0 0 0.3rem">${esc(ch.name)}: ${esc(ch.outfit || 'default')} ${ch.outfitChanged ? '<span style="color:var(--yellow)">(CHANGED)</span>' : ''}</p>
+                  <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
+                    <span style="font-size:0.65rem;color:${hasPortrait ? 'var(--green)' : 'var(--text2)'};">${hasPortrait ? 'Portrait' : 'No portrait'}</span>
+                    <span style="font-size:0.65rem;color:${hasOutfit ? 'var(--green)' : 'var(--text2)'};">${hasOutfit ? 'Outfit' : 'No outfit img'}</span>
+                    <div id="compose-thumb-${composeKey}" style="width:40px;height:54px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;flex-shrink:0;">
+                      ${composed ? `<img src="data:${composed.mimeType};base64,${composed.base64}" style="width:100%;height:100%;object-fit:cover;">` : ''}
+                    </div>
+                    <button class="gen-ref-btn" onclick="composeCharacterForScene('${esc(ch.name).replace(/'/g, "\\'")}', ${si})" style="font-size:0.65rem;padding:0.2rem 0.5rem;" ${!hasPortrait ? 'disabled title="Generate portrait first"' : ''}>
+                      ${composed ? 'Recompose' : 'Compose'}
+                    </button>
+                  </div>
+                </div>`;
+              }).join('')}
+            </div>
+            <div class="bd-col">
+              <h4>Location</h4>
+              <p>${esc(entry?.locationName || s.locationName)}</p>
+              <p style="font-size:0.72rem;color:var(--text2)">${esc(entry?.timeOfDay || s.timeOfDay)} &middot; ${esc(entry?.weather || 'clear')} &middot; ${esc(entry?.lighting || '')}</p>
+            </div>
+          </div>
+          ${entry?.continuityNotes ? `<div class="pp-continuity-note">Continuity: ${esc(entry.continuityNotes)}</div>` : ''}
+          <div class="pp-signoff ${isSignedOff ? 'signed-off' : ''}">
+            <input type="checkbox" ${isSignedOff ? 'checked' : ''} onchange="toggleSceneSignoff(${si}, this)">
+            <span>Scene ${si + 1} signed off</span>
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+
+    // ── Proceed bar ──
+    html += `
+      <div class="pp-proceed-bar">
+        <button class="pp-back-btn" onclick="goBackToResults()">Back to Results</button>
+        <button class="pp-proceed-btn" id="ppProceedBtn" onclick="proceedToTimeline()">Proceed to Timeline</button>
+      </div>`;
+
+    ppv.innerHTML = html;
+    updateProceedButton();
+  }
+
+  function renderTimeline(data) {
+    const el = document.getElementById('timelineView');
+    const scenes = data.scenes || [];
+    const shots = data.shots || {};
+
+    let totalShots = 0;
+    let totalDuration = 0;
+    for (const [, shotOutput] of Object.entries(shots)) {
+      const s = shotOutput.shots || [];
+      totalShots += s.length;
+      s.forEach(shot => totalDuration += (shot.durationSeconds || 0));
+    }
+
+    let html = `
+      <div class="timeline-header">
+        <h2>Production Timeline</h2>
+        <div style="display:flex;gap:0.5rem">
+          <button class="back-btn" onclick="goBackToPreProduction()">← Pre-Production</button>
+          <button class="back-btn" onclick="goBackToResults()">← Script</button>
+        </div>
+      </div>
+      <div class="timeline-summary">
+        <div class="timeline-stat"><span class="stat-val">${scenes.length}</span> Scenes</div>
+        <div class="timeline-stat"><span class="stat-val">${totalShots}</span> Shots</div>
+        <div class="timeline-stat"><span class="stat-val">${totalDuration}s</span> Total</div>
+        <div class="timeline-stat">Format: <span class="stat-val">${esc(data.plan?.formatLabel || selectedFormat)}</span></div>
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+        <button class="generate-all-images-btn" onclick="generateAllFrames()">
+          Generate All Images (${totalShots * 2} frames)
+        </button>
+        <button class="generate-all-images-btn" onclick="generateAllVideos()" style="background:linear-gradient(135deg, var(--accent), var(--pink));">
+          Generate All Videos (${(() => { let r=0; for(const[,so] of Object.entries(shots)){(so.shots||[]).forEach(s=>{if(s.generatedVideoUrl)r++})} return r>0?r+'/'+totalShots+' done':totalShots+' clips'; })()})
+        </button>
+      </div>
+      <div class="timeline-scenes">`;
+
+    for (let i = 0; i < scenes.length; i++) {
+      const scene = scenes[i];
+      const sceneShots = (shots[i]?.shots) || (shots[String(i)]?.shots) || [];
+
+      // Reference status bar for this scene
+      const pp = preProductionData || {};
+      const cpEntries = pp.continuityPlan?.entries || [];
+      const scEntry = cpEntries.find(e => e.sceneIndex === i);
+      const scChars = scEntry?.characters || scene.characters || [];
+      const locs = data.locations?.locations || [];
+      const chars = data.characters?.characters || [];
+      const sceneLoc = locs.find(l => l.name === (scEntry?.locationName || scene.locationName));
+      let refsReady = 0, refsTotal = scChars.length + 1;
+      const charThumbs = scChars.map(ch => {
+        const key = ch.name + '-' + i;
+        const composed = pp.composedCharacters?.[key];
+        if (composed) refsReady++;
+        return composed
+          ? `<img src="data:${composed.mimeType};base64,${composed.base64}" title="${esc(ch.name)}" style="width:32px;height:42px;object-fit:cover;border-radius:3px;">`
+          : `<span title="${esc(ch.name)} (not composed)" style="width:32px;height:42px;background:rgba(255,255,255,0.06);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-size:0.6rem;color:var(--text2);">?</span>`;
+      }).join('');
+      const locThumb = sceneLoc?.generatedBackground
+        ? (refsReady++, `<img src="data:${sceneLoc.generatedBackground.mimeType};base64,${sceneLoc.generatedBackground.base64}" title="${esc(sceneLoc.name)}" style="width:56px;height:32px;object-fit:cover;border-radius:3px;">`)
+        : `<span title="Location (no background)" style="width:56px;height:32px;background:rgba(255,255,255,0.06);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-size:0.6rem;color:var(--text2);">?</span>`;
+
+      html += `
+        <div class="timeline-scene-group">
+          <div class="timeline-scene-header">
+            <span class="scene-num">Scene ${i + 1}</span>
+            <h4>${esc(scene.title)}</h4>
+            <span class="scene-dur">${scene.estimatedDurationSeconds || '?'}s</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem;padding:0.3rem 0.6rem;font-size:0.7rem;color:var(--text2);flex-wrap:wrap;">
+            <span>Refs:</span>${charThumbs}${locThumb}
+            <span style="margin-left:0.3rem;color:${refsReady === refsTotal ? 'var(--green)' : 'var(--yellow)'};">${refsReady}/${refsTotal} ready</span>
+            ${refsReady < refsTotal ? `<span style="font-size:0.6rem;opacity:0.6;">(compose in Pre-Production)</span>` : ''}
+          </div>
+          <div class="timeline-track">`;
+
+      sceneShots.forEach((shot, j) => {
+        const ff = shot.firstFrame || {};
+        const lf = shot.lastFrame || {};
+        const ffImg = ff.generatedImage;
+        const lfImg = lf.generatedImage;
+        html += `
+          <div class="timeline-shot" data-scene="${i}" data-shot="${j}">
+            <div class="timeline-shot-header">
+              <span class="shot-num">Shot ${j + 1}</span>
+              <span class="shot-dur">${shot.durationSeconds || '?'}s</span>
+              <span class="shot-camera">${esc(shot.camera?.movement || '')}</span>
+            </div>
+            <div class="timeline-frames">
+              <div class="timeline-frame first">
+                <div class="frame-label">First Frame</div>
+                <div class="frame-img-placeholder">${ffImg ? `<img src="data:${ffImg.mimeType};base64,${ffImg.base64}" style="width:100%;height:auto;border-radius:4px;">` : '🖼'}</div>
+                <div class="frame-prompt">${esc(ff.description || '')}</div>
+              </div>
+              <div class="timeline-frame last">
+                <div class="frame-label">Last Frame</div>
+                <div class="frame-img-placeholder">${lfImg ? `<img src="data:${lfImg.mimeType};base64,${lfImg.base64}" style="width:100%;height:auto;border-radius:4px;">` : '🖼'}</div>
+                <div class="frame-prompt">${esc(lf.description || '')}</div>
+              </div>
+            </div>
+            <div class="video-player-container">${shot.generatedVideoUrl ? `<video controls style="width:100%;border-radius:6px;margin-top:0.5rem;" src="${shot.generatedVideoUrl}"></video>` : ''}</div>
+            <div class="video-status" style="font-size:0.7rem;color:var(--text2);min-height:1rem;"></div>
+            <div class="timeline-shot-actions">
+              <button class="shot-gen-btn" onclick="generateShotFrames(${i}, ${j})">Regenerate Frames</button>
+              <button class="shot-gen-btn" onclick="generateShotVideo(${i}, ${j})" style="background:linear-gradient(135deg, var(--accent), var(--pink));" ${(ffImg && lfImg) ? '' : 'disabled title="Generate first & last frames first"'}>${shot.generatedVideoUrl ? 'Regenerate Video' : 'Generate Video'}</button>
+              ${shot.generatedVideoUrl ? `<button class="shot-download-btn" onclick="downloadShotVideo(${i}, ${j})">Download</button>` : ''}
+            </div>
+          </div>`;
+      });
+
+      html += `</div></div>`;
+    }
+
+    // Count how many clips are ready
+    let readyClips = 0;
+    for (let i = 0; i < scenes.length; i++) {
+      const sceneShots = (shots[i]?.shots) || (shots[String(i)]?.shots) || [];
+      sceneShots.forEach(s => { if (s.generatedVideoUrl) readyClips++; });
+    }
+
+    html += '</div>';
+
+    // Final Cut Preview section
+    html += `
+      <div class="final-cut-section" id="finalCutSection">
+        <h3>Final Cut Preview</h3>
+        <div id="finalCutStatus" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;font-size:0.8rem;color:var(--text2);">
+          <span style="color:${readyClips === totalShots ? 'var(--green)' : 'var(--yellow)'};">${readyClips}/${totalShots} clips ready</span>
+          ${readyClips < totalShots ? '<span>— generate remaining videos first</span>' : '<span>— click Play Full Video to watch!</span>'}
+        </div>
+        <div class="final-cut-player" id="finalCutPlayer">
+          <video id="finalCutVideo" controls style="width:100%;height:100%;object-fit:contain;"></video>
+        </div>
+        <div class="final-cut-playlist" id="finalCutPlaylist"></div>
+        <div class="final-cut-actions">
+          <button class="final-cut-btn play" onclick="playFinalCut()" ${readyClips === 0 ? 'disabled' : ''}>
+            Play Full Video
+          </button>
+          <button class="final-cut-btn download-all" onclick="downloadAllClips()" ${readyClips === 0 ? 'disabled' : ''}>
+            Download All Clips (${readyClips})
+          </button>
+          <button class="final-cut-btn download-stitch" onclick="stitchAndDownload()" ${readyClips < 2 ? 'disabled' : ''}>
+            Stitch &amp; Download Final Cut
+          </button>
+        </div>
+        <div class="final-cut-progress" id="finalCutProgress"></div>
+      </div>`;
+
+    el.innerHTML = html;
+    buildFinalCutPlaylist();
+  }
+
+  // ── Final Cut: sequential playback of all clips ──
+
+  let finalCutClips = [];
+  let finalCutIndex = 0;
+  let finalCutPlaying = false;
+
+  function buildFinalCutPlaylist() {
+    const scenes = lastGeneratedData?.scenes || [];
+    const shots = lastGeneratedData?.shots || {};
+    finalCutClips = [];
+
+    for (let i = 0; i < scenes.length; i++) {
+      const sceneShots = (shots[i]?.shots) || (shots[String(i)]?.shots) || [];
+      sceneShots.forEach((shot, j) => {
+        if (shot.generatedVideoUrl) {
+          const ff = shot.firstFrame?.generatedImage;
+          finalCutClips.push({
+            url: shot.generatedVideoUrl,
+            label: `S${i+1} Shot ${j+1}`,
+            sceneIdx: i,
+            shotIdx: j,
+            thumb: ff ? `data:${ff.mimeType};base64,${ff.base64}` : null
+          });
+        }
+      });
+    }
+
+    const container = document.getElementById('finalCutPlaylist');
+    if (!container) return;
+
+    container.innerHTML = finalCutClips.map((clip, idx) => `
+      <div class="final-cut-thumb ${idx === 0 ? 'active' : ''}" onclick="jumpToClip(${idx})" data-clip-idx="${idx}">
+        ${clip.thumb ? `<img src="${clip.thumb}" alt="${clip.label}">` : '<div style="width:100%;aspect-ratio:16/9;background:rgba(255,255,255,0.06);border-radius:4px;"></div>'}
+        <div>${clip.label}</div>
+      </div>
+    `).join('');
+
+    // Auto-load the first clip so the player isn't empty
+    if (finalCutClips.length > 0) {
+      const video = document.getElementById('finalCutVideo');
+      if (video && !video.getAttribute('src')) {
+        video.src = finalCutClips[0].url;
+        video.load();
+        updateFinalCutProgress(`Ready to play — ${finalCutClips.length} clips loaded`);
+      }
+    }
+
+    // Update status text
+    const statusEl = document.getElementById('finalCutStatus');
+    if (statusEl) {
+      const total = (() => { let t=0; const shots=lastGeneratedData?.shots||{}; for(const[,so] of Object.entries(shots)){t+=(so.shots||[]).length} return t; })();
+      const ready = finalCutClips.length;
+      statusEl.innerHTML = `<span style="color:${ready === total ? 'var(--green)' : 'var(--yellow)'};">${ready}/${total} clips ready</span>` +
+        (ready < total ? '<span>— generate remaining videos first</span>' : '<span>— click Play Full Video to watch!</span>');
+    }
+
+    // Update buttons
+    const section = document.getElementById('finalCutSection');
+    if (section) {
+      section.querySelectorAll('.final-cut-btn.play, .final-cut-btn.download-all').forEach(b => b.disabled = finalCutClips.length === 0);
+      const dlBtn = section.querySelector('.final-cut-btn.download-all');
+      if (dlBtn) dlBtn.textContent = `Download All Clips (${finalCutClips.length})`;
+      const stitchBtn = section.querySelector('.final-cut-btn.download-stitch');
+      if (stitchBtn) stitchBtn.disabled = finalCutClips.length < 2;
+    }
+  }
+
+  function jumpToClip(idx) {
+    if (idx < 0 || idx >= finalCutClips.length) return;
+    finalCutIndex = idx;
+    const video = document.getElementById('finalCutVideo');
+    if (!video) return;
+    video.src = finalCutClips[idx].url;
+    video.play();
+    finalCutPlaying = true;
+    updateFinalCutHighlight();
+    updateFinalCutProgress(`Playing clip ${idx + 1} of ${finalCutClips.length}: ${finalCutClips[idx].label}`);
+  }
+
+  function playFinalCut() {
+    if (finalCutClips.length === 0) return;
+    const video = document.getElementById('finalCutVideo');
+    if (!video) return;
+
+    // Remove old listener to avoid stacking
+    video.removeEventListener('ended', onFinalCutClipEnded);
+    video.addEventListener('ended', onFinalCutClipEnded);
+
+    finalCutIndex = 0;
+    finalCutPlaying = true;
+    video.src = finalCutClips[0].url;
+    video.play();
+    updateFinalCutHighlight();
+    updateFinalCutProgress(`Playing clip 1 of ${finalCutClips.length}: ${finalCutClips[0].label}`);
+  }
+
+  function onFinalCutClipEnded() {
+    if (!finalCutPlaying) return;
+    finalCutIndex++;
+    if (finalCutIndex < finalCutClips.length) {
+      const video = document.getElementById('finalCutVideo');
+      video.src = finalCutClips[finalCutIndex].url;
+      video.play();
+      updateFinalCutHighlight();
+      updateFinalCutProgress(`Playing clip ${finalCutIndex + 1} of ${finalCutClips.length}: ${finalCutClips[finalCutIndex].label}`);
+    } else {
+      finalCutPlaying = false;
+      updateFinalCutProgress('Playback complete!');
+    }
+  }
+
+  function updateFinalCutHighlight() {
+    document.querySelectorAll('.final-cut-thumb').forEach((el, i) => {
+      el.classList.toggle('active', i === finalCutIndex);
+    });
+    // Scroll active thumb into view
+    const active = document.querySelector('.final-cut-thumb.active');
+    if (active) active.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }
+
+  function updateFinalCutProgress(msg) {
+    const el = document.getElementById('finalCutProgress');
+    if (el) el.textContent = msg;
+  }
+
+  // ── Download individual shot ──
+
+  function downloadShotVideo(sceneIdx, shotIdx) {
+    const shots = lastGeneratedData?.shots || {};
+    const sceneShots = (shots[sceneIdx]?.shots) || (shots[String(sceneIdx)]?.shots) || [];
+    const shot = sceneShots[shotIdx];
+    if (!shot?.generatedVideoUrl) return;
+    const a = document.createElement('a');
+    a.href = shot.generatedVideoUrl;
+    a.download = `scene${sceneIdx + 1}_shot${shotIdx + 1}.mp4`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  // ── Download all clips as individual files ──
+
+  async function downloadAllClips() {
+    buildFinalCutPlaylist();
+    for (let i = 0; i < finalCutClips.length; i++) {
+      const clip = finalCutClips[i];
+      updateFinalCutProgress(`Downloading clip ${i + 1} of ${finalCutClips.length}...`);
+      try {
+        const resp = await fetch(clip.url);
+        const blob = await resp.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `scene${clip.sceneIdx + 1}_shot${clip.shotIdx + 1}.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+        // Small delay between downloads so browser doesn't block them
+        await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        console.error('Download failed for clip:', clip.label, err);
+      }
+    }
+    updateFinalCutProgress(`Downloaded ${finalCutClips.length} clips!`);
+  }
+
+  // ── Stitch & Download: combines all clips into one video using MediaRecorder ──
+
+  async function stitchAndDownload() {
+    buildFinalCutPlaylist();
+    if (finalCutClips.length < 2) return;
+
+    const progressEl = document.getElementById('finalCutProgress');
+    const stitchBtn = document.querySelector('.final-cut-btn.download-stitch');
+    if (stitchBtn) { stitchBtn.disabled = true; stitchBtn.textContent = 'Stitching...'; }
+
+    try {
+      // Create offscreen video + canvas for recording
+      const offVideo = document.createElement('video');
+      offVideo.crossOrigin = 'anonymous';
+      offVideo.muted = false;
+      offVideo.playsInline = true;
+
+      // Wait for first clip to get dimensions
+      await new Promise((resolve, reject) => {
+        offVideo.onloadedmetadata = resolve;
+        offVideo.onerror = reject;
+        offVideo.src = finalCutClips[0].url;
+      });
+
+      const w = offVideo.videoWidth || 1280;
+      const h = offVideo.videoHeight || 720;
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+
+      // Set up MediaRecorder on canvas stream + audio
+      const canvasStream = canvas.captureStream(30);
+      // Try to capture audio from the video element
+      let combinedStream = canvasStream;
+      try {
+        const audioCtx = new AudioContext();
+        const source = audioCtx.createMediaElementSource(offVideo);
+        const dest = audioCtx.createMediaStreamDestination();
+        source.connect(dest);
+        source.connect(audioCtx.destination);
+        const audioTrack = dest.stream.getAudioTracks()[0];
+        if (audioTrack) combinedStream = new MediaStream([...canvasStream.getVideoTracks(), audioTrack]);
+      } catch (e) {
+        // Audio capture not supported or no audio; proceed with video only
+      }
+
+      const chunks = [];
+      const recorder = new MediaRecorder(combinedStream, {
+        mimeType: MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm'
+      });
+      recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+
+      const stitchDone = new Promise(resolve => { recorder.onstop = resolve; });
+      recorder.start();
+
+      // Draw loop
+      let drawing = true;
+      function drawFrame() {
+        if (!drawing) return;
+        ctx.drawImage(offVideo, 0, 0, w, h);
+        requestAnimationFrame(drawFrame);
+      }
+
+      // Start drawing loop
+      drawFrame();
+
+      // Play clips sequentially
+      for (let i = 0; i < finalCutClips.length; i++) {
+        if (progressEl) progressEl.textContent = `Stitching clip ${i + 1} of ${finalCutClips.length}...`;
+
+        await new Promise((resolve, reject) => {
+          offVideo.onended = resolve;
+          offVideo.onerror = reject;
+          offVideo.src = finalCutClips[i].url;
+          offVideo.play();
+        });
+      }
+
+      drawing = false;
+      recorder.stop();
+      await stitchDone;
+
+      // Download stitched file
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'final_cut.webm';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+
+      if (progressEl) progressEl.textContent = 'Final cut downloaded!';
+    } catch (err) {
+      console.error('Stitch failed:', err);
+      if (progressEl) progressEl.textContent = 'Stitch failed: ' + err.message;
+    }
+
+    if (stitchBtn) { stitchBtn.disabled = false; stitchBtn.textContent = 'Stitch & Download Final Cut'; }
+  }
+
+  // ── Item-level controls ──
+
+  function toggleItemLock(type, idx, btn) {
+    const key = type + '-' + idx;
+    if (lockedItems.has(key)) {
+      lockedItems.delete(key);
+      btn.classList.remove('locked');
+      btn.textContent = '🔓';
+      btn.closest('.item-card')?.classList.remove('item-locked');
+    } else {
+      lockedItems.add(key);
+      btn.classList.add('locked');
+      btn.textContent = '🔒';
+      btn.closest('.item-card')?.classList.add('item-locked');
+    }
+  }
+
+  function startItemAi(type, idx) {
+    if (lockedItems.has(type + '-' + idx)) {
+      alert('Unlock this item first to use AI.');
+      return;
+    }
+    resultAiTarget = type + ':' + idx;
+    const bar = document.getElementById('resultAiBar');
+    const label = document.getElementById('resultAiLabel');
+    const input = document.getElementById('resultAiDirection');
+    const names = { concept:'Concept', milestone:'Milestone', character:'Character', location:'Location', scene:'Scene' };
+    const displayType = type.startsWith('shot-') ? 'Shot' : (names[type] || type);
+    label.textContent = '✨ ' + displayType + ' #' + (idx + 1);
+    input.value = '';
+    bar.classList.add('visible');
+    input.focus();
+  }
+
+  function toggleItemEdit(type, idx) {
+    if (lockedItems.has(type + '-' + idx)) return;
+    const card = document.querySelector('.item-card[data-type="' + type + '"][data-idx="' + idx + '"]');
+    if (card) card.classList.toggle('editing');
+  }
+
+  function cancelItemEdit(type, idx) {
+    const card = document.querySelector('.item-card[data-type="' + type + '"][data-idx="' + idx + '"]');
+    if (card) card.classList.remove('editing');
+  }
+
+  function saveItemEdit(type, idx) {
+    const card = document.querySelector('.item-card[data-type="' + type + '"][data-idx="' + idx + '"]');
+    if (!card) return;
+
+    const inputs = card.querySelectorAll('.item-edit-form [data-field]');
+    const updates = {};
+    inputs.forEach(inp => {
+      const field = inp.dataset.field;
+      let val = inp.tagName === 'TEXTAREA' ? inp.value : (inp.type === 'number' ? Number(inp.value) : inp.value);
+      if (field.includes('.')) {
+        const [parent, child] = field.split('.');
+        if (!updates[parent]) updates[parent] = {};
+        updates[parent][child] = val;
+      } else {
+        updates[field] = val;
+      }
+    });
+
+    const d = lastGeneratedData;
+    const baseType = type.startsWith('shot-') ? 'shot' : type;
+    let target;
+
+    if (baseType === 'concept') target = d.concept;
+    else if (baseType === 'milestone') target = d.milestones?.milestones?.[idx];
+    else if (baseType === 'character') target = d.characters?.characters?.[idx];
+    else if (baseType === 'location') target = d.locations?.locations?.[idx];
+    else if (baseType === 'scene') target = d.scenes?.[idx];
+    else if (baseType === 'shot') {
+      const si = parseInt(type.split('-')[1]);
+      const g = d.shots[si] || d.shots[String(si)];
+      target = g?.shots?.[idx];
+    }
+
+    if (!target) return;
+
+    Object.keys(updates).forEach(k => {
+      if (typeof updates[k] === 'object' && !Array.isArray(updates[k]) && target[k] && typeof target[k] === 'object') {
+        Object.assign(target[k], updates[k]);
+      } else {
+        target[k] = updates[k];
+      }
+    });
+
+    // Type conversions
+    if (updates.interior !== undefined) target.interior = updates.interior === 'true' || updates.interior === true;
+    if (updates.tensionLevel !== undefined) target.tensionLevel = Number(updates.tensionLevel);
+    if (updates.estimatedDurationSeconds !== undefined) target.estimatedDurationSeconds = Number(updates.estimatedDurationSeconds);
+    if (updates.durationSeconds !== undefined) target.durationSeconds = Number(updates.durationSeconds);
+
+    renderResults(d, true);
+  }
+
+  function moveItem(type, idx, dir) {
+    const newIdx = idx + dir;
+    const d = lastGeneratedData;
+    const baseType = type.startsWith('shot-') ? 'shot' : type;
+    let arr;
+
+    if (baseType === 'milestone') arr = d.milestones?.milestones;
+    else if (baseType === 'character') arr = d.characters?.characters;
+    else if (baseType === 'location') arr = d.locations?.locations;
+    else if (baseType === 'scene') arr = d.scenes;
+    else if (baseType === 'shot') {
+      const si = parseInt(type.split('-')[1]);
+      const g = d.shots[si] || d.shots[String(si)];
+      arr = g?.shots;
+    }
+
+    if (!arr || newIdx < 0 || newIdx >= arr.length) return;
+
+    [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+
+    // Update locked items keys
+    const oldKey = type + '-' + idx;
+    const newKey = type + '-' + newIdx;
+    const oldLocked = lockedItems.has(oldKey);
+    const newLocked = lockedItems.has(newKey);
+    lockedItems.delete(oldKey);
+    lockedItems.delete(newKey);
+    if (oldLocked) lockedItems.add(newKey);
+    if (newLocked) lockedItems.add(oldKey);
+
+    renderResults(d, true);
+  }
+
+  function deleteItem(type, idx) {
+    if (!confirm('Delete this item?')) return;
+    const d = lastGeneratedData;
+    const baseType = type.startsWith('shot-') ? 'shot' : type;
+    let arr;
+
+    if (baseType === 'milestone') arr = d.milestones?.milestones;
+    else if (baseType === 'character') arr = d.characters?.characters;
+    else if (baseType === 'location') arr = d.locations?.locations;
+    else if (baseType === 'scene') arr = d.scenes;
+    else if (baseType === 'shot') {
+      const si = parseInt(type.split('-')[1]);
+      const g = d.shots[si] || d.shots[String(si)];
+      arr = g?.shots;
+    }
+
+    if (!arr) return;
+    arr.splice(idx, 1);
+
+    // Re-index locked items
+    const toRemove = [];
+    const toAdd = [];
+    lockedItems.forEach(key => {
+      if (key.startsWith(type + '-')) {
+        const i = parseInt(key.split('-').pop());
+        if (i === idx) toRemove.push(key);
+        else if (i > idx) {
+          toRemove.push(key);
+          toAdd.push(type + '-' + (i - 1));
+        }
+      }
+    });
+    toRemove.forEach(k => lockedItems.delete(k));
+    toAdd.forEach(k => lockedItems.add(k));
+
+    renderResults(d, true);
+  }
+
+  function addItem(type) {
+    const d = lastGeneratedData;
+    if (type === 'milestone') {
+      const ms = d.milestones?.milestones;
+      if (!ms) return;
+      ms.push({ beatId: 'new-beat', title: 'New Milestone', description: '', emotionalTone: '', location: '', stakes: '', characters: [], causedBy: null, leadsTo: null });
+      renderResults(d, true);
+      setTimeout(() => toggleItemEdit('milestone', ms.length - 1), 50);
+    } else if (type === 'character') {
+      const chars = d.characters?.characters;
+      if (!chars) return;
+      chars.push({ name: 'New Character', role: 'supporting', importance: 'secondary', personality: '', appearance: {}, defaultOutfit: {}, accessories: [], voice: {}, speechPattern: '', mannerisms: [], arc: '' });
+      renderResults(d, true);
+      setTimeout(() => toggleItemEdit('character', chars.length - 1), 50);
+    } else if (type === 'location') {
+      const locs = d.locations?.locations;
+      if (!locs) return;
+      locs.push({ name: 'New Location', type: '', description: '', interior: true, dimensions: '', colorScheme: [], keyFeatures: [], furnitureAndProps: [], lightingCondition: '', mood: '' });
+      renderResults(d, true);
+      setTimeout(() => toggleItemEdit('location', locs.length - 1), 50);
+    } else if (type === 'scene') {
+      const scenes = d.scenes;
+      if (!scenes) return;
+      scenes.push({ title: 'New Scene', slugline: 'INT. LOCATION - DAY', description: '', purpose: '', locationName: '', timeOfDay: 'DAY', characters: [], events: [], dialogue: [], tensionLevel: 5, emotionalTone: '', estimatedDurationSeconds: 10, transitionIn: 'CUT TO', transitionOut: 'CUT TO', musicMood: '' });
+      renderResults(d, true);
+      setTimeout(() => toggleItemEdit('scene', scenes.length - 1), 50);
+    }
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+  }
+</script>
+
+</body>
+</html>

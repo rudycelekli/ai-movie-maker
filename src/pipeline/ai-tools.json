@@ -1,0 +1,561 @@
+{
+  "name": "AI Movie Maker Pipeline Configuration",
+  "version": "1.0.0",
+  "description": "Routing configuration for all AI tools in the production pipeline. Defines which tool to use for each task type, with cost/quality tradeoffs.",
+
+  "imageGeneration": {
+    "providers": [
+      {
+        "id": "flux-kontext",
+        "name": "FLUX Kontext Pro",
+        "apiEndpoint": "https://api.bfl.ai/v1",
+        "costPerImage": 0.04,
+        "quality": 9,
+        "characterConsistency": 9,
+        "speed": "fast",
+        "capabilities": ["text-to-image", "image-editing", "character-reference", "iterative-consistency", "inpainting", "outpainting"],
+        "bestFor": ["production-keyframes", "character-consistency", "iterative-refinement"],
+        "maxResolution": "4MP",
+        "supportsLoRA": true,
+        "supportsIPAdapter": true,
+        "apiAvailable": true,
+        "notes": "Primary choice for production. Best API + consistency combo."
+      },
+      {
+        "id": "midjourney-v7",
+        "name": "Midjourney V7",
+        "apiEndpoint": "unofficial",
+        "costPerImage": 0.02,
+        "quality": 10,
+        "characterConsistency": 10,
+        "speed": "medium",
+        "capabilities": ["text-to-image", "character-reference", "style-reference", "vary-region"],
+        "bestFor": ["highest-quality-stills", "concept-art", "character-design"],
+        "maxResolution": "2048x2048",
+        "supportsLoRA": false,
+        "supportsIPAdapter": false,
+        "apiAvailable": false,
+        "notes": "Best quality + --cref but NO official API. Use for character design phase."
+      },
+      {
+        "id": "gpt-image-1",
+        "name": "GPT Image 1",
+        "apiEndpoint": "https://api.openai.com/v1/images",
+        "costPerImage": 0.042,
+        "quality": 9,
+        "characterConsistency": 7,
+        "speed": "medium",
+        "capabilities": ["text-to-image", "image-editing", "inpainting", "mask-editing"],
+        "bestFor": ["inpainting", "detail-refinement", "text-in-images"],
+        "maxResolution": "1024x1024",
+        "supportsLoRA": false,
+        "supportsIPAdapter": false,
+        "apiAvailable": true,
+        "notes": "Best for mask-based inpainting and detail corrections."
+      },
+      {
+        "id": "nano-banana-2",
+        "name": "Google Nano Banana 2",
+        "apiEndpoint": "https://generativelanguage.googleapis.com/v1",
+        "costPerImage": 0.04,
+        "quality": 9,
+        "characterConsistency": 9,
+        "speed": "fast",
+        "capabilities": ["text-to-image", "multi-character-reference"],
+        "bestFor": ["multi-character-scenes", "group-shots"],
+        "maxResolution": "4K",
+        "supportsLoRA": false,
+        "supportsIPAdapter": false,
+        "apiAvailable": true,
+        "notes": "Only model supporting 5 simultaneous character references. Use for group scenes."
+      },
+      {
+        "id": "stable-diffusion",
+        "name": "Stable Diffusion 3.5 (Self-hosted/API)",
+        "apiEndpoint": "https://api.stability.ai/v2beta",
+        "costPerImage": 0.04,
+        "quality": 7,
+        "characterConsistency": 8,
+        "speed": "fast",
+        "capabilities": ["text-to-image", "inpainting", "outpainting", "controlnet", "lora", "ip-adapter"],
+        "bestFor": ["budget-pipeline", "full-control", "custom-workflows"],
+        "maxResolution": "1024x1024",
+        "supportsLoRA": true,
+        "supportsIPAdapter": true,
+        "apiAvailable": true,
+        "notes": "Most flexible for custom pipelines. Self-hosting eliminates per-image cost."
+      }
+    ],
+    "routing": {
+      "characterDesign": "midjourney-v7",
+      "keyframeGeneration": "flux-kontext",
+      "multiCharacterScenes": "nano-banana-2",
+      "inpaintingRefinement": "gpt-image-1",
+      "budgetBatch": "stable-diffusion",
+      "kidMode": "flux-kontext"
+    },
+    "characterConsistency": {
+      "method": "lora",
+      "fallbackMethod": "kontext-iterative",
+      "loraTrainingImages": 20,
+      "loraTrainingSteps": 1500,
+      "loraRank": 4,
+      "refreshReferenceEveryNScenes": 10
+    }
+  },
+
+  "videoGeneration": {
+    "providers": [
+      {
+        "id": "runway-gen4",
+        "name": "Runway Gen-4 Turbo",
+        "apiEndpoint": "https://api.dev.runwayml.com/v1",
+        "costPerSecond": 0.05,
+        "quality": 9,
+        "characterConsistency": 10,
+        "maxDuration": 16,
+        "resolution": "720p",
+        "nativeAudio": false,
+        "capabilities": ["image-to-video", "character-reference", "text-to-video"],
+        "bestFor": ["character-consistency", "cinematic-quality", "cost-efficiency"],
+        "firstLastFrame": false,
+        "notes": "Best character consistency. No audio — pair with voice/music pipeline."
+      },
+      {
+        "id": "veo-3.1",
+        "name": "Google Veo 3.1",
+        "apiEndpoint": "https://generativelanguage.googleapis.com/v1",
+        "costPerSecond": 0.40,
+        "quality": 10,
+        "characterConsistency": 6,
+        "maxDuration": 8,
+        "resolution": "1080p",
+        "nativeAudio": true,
+        "capabilities": ["first-last-frame", "text-to-video", "image-to-video"],
+        "bestFor": ["dialogue-scenes", "native-audio", "highest-quality"],
+        "firstLastFrame": true,
+        "notes": "Best quality + native audio. Use for dialogue-heavy scenes. Expensive."
+      },
+      {
+        "id": "veo-3.1-fast",
+        "name": "Google Veo 3.1 Fast",
+        "apiEndpoint": "https://generativelanguage.googleapis.com/v1",
+        "costPerSecond": 0.15,
+        "quality": 8,
+        "characterConsistency": 6,
+        "maxDuration": 8,
+        "resolution": "1080p",
+        "nativeAudio": true,
+        "capabilities": ["first-last-frame", "text-to-video", "image-to-video"],
+        "bestFor": ["dialogue-drafts", "audio-scenes-budget"],
+        "firstLastFrame": true,
+        "notes": "Good balance for dialogue scenes when budget matters."
+      },
+      {
+        "id": "pika-pikaframes",
+        "name": "Pika 2.2 Pikaframes",
+        "apiEndpoint": "https://fal.ai/models/fal-ai/pika/v2.2/pikaframes",
+        "costPerSecond": 0.04,
+        "quality": 7,
+        "characterConsistency": 5,
+        "maxDuration": 25,
+        "resolution": "1080p",
+        "nativeAudio": false,
+        "capabilities": ["multi-keyframe", "first-last-frame"],
+        "bestFor": ["transitions", "long-shots", "multi-keyframe", "budget"],
+        "firstLastFrame": true,
+        "multiKeyframe": true,
+        "maxKeyframes": 5,
+        "notes": "ONLY tool supporting 5 keyframes. Cheapest. Use for transitions + long shots."
+      },
+      {
+        "id": "kling-3.0",
+        "name": "Kling 3.0",
+        "apiEndpoint": "https://api.kling.ai/v1",
+        "costPerSecond": 0.10,
+        "quality": 9,
+        "characterConsistency": 8,
+        "maxDuration": 15,
+        "resolution": "4K",
+        "nativeAudio": true,
+        "capabilities": ["first-last-frame", "character-reference", "multi-shot", "motion-brush"],
+        "bestFor": ["action-scenes", "4K-output", "multi-shot-sequences"],
+        "firstLastFrame": true,
+        "notes": "Best for action. Native 4K. Elements feature for consistency."
+      },
+      {
+        "id": "kling-o1",
+        "name": "Kling O1 (Keyframe)",
+        "apiEndpoint": "https://fal.ai/models/fal-ai/kling-video/o1",
+        "costPerSecond": 0.112,
+        "quality": 8,
+        "characterConsistency": 7,
+        "maxDuration": 10,
+        "resolution": "1080p",
+        "nativeAudio": false,
+        "capabilities": ["first-last-frame"],
+        "bestFor": ["precise-interpolation", "controlled-motion"],
+        "firstLastFrame": true,
+        "notes": "Specialized for first+last frame. Best motion path synthesis."
+      },
+      {
+        "id": "hailuo-2.3",
+        "name": "Hailuo / MiniMax 2.3",
+        "apiEndpoint": "https://api.minimax.chat/v1",
+        "costPerSecond": 0.05,
+        "quality": 8,
+        "characterConsistency": 8,
+        "maxDuration": 10,
+        "resolution": "1080p",
+        "nativeAudio": false,
+        "capabilities": ["first-last-frame", "character-reference"],
+        "bestFor": ["emotional-scenes", "micro-expressions", "anime"],
+        "firstLastFrame": true,
+        "notes": "Best micro-expressions. S2V character reference. Good for emotional scenes."
+      },
+      {
+        "id": "wan-2.6",
+        "name": "Wan 2.6 (Alibaba)",
+        "apiEndpoint": "https://dashscope.aliyuncs.com/api/v1",
+        "costPerSecond": 0.03,
+        "quality": 7,
+        "characterConsistency": 9,
+        "maxDuration": 15,
+        "resolution": "1080p",
+        "nativeAudio": true,
+        "capabilities": ["first-last-frame", "character-reference", "voice-clone"],
+        "bestFor": ["budget-production", "self-hosting", "character-clone"],
+        "firstLastFrame": true,
+        "openSource": true,
+        "notes": "Open source (Apache 2.0). Best budget option. Clone-level character consistency."
+      }
+    ],
+    "routing": {
+      "dialogue": "veo-3.1-fast",
+      "dialoguePremium": "veo-3.1",
+      "action": "kling-3.0",
+      "emotional": "hailuo-2.3",
+      "establishing": "kling-3.0",
+      "transition": "pika-pikaframes",
+      "characterHeavy": "runway-gen4",
+      "budget": "wan-2.6",
+      "default": "runway-gen4",
+      "kidMode": "runway-gen4"
+    },
+    "chaining": {
+      "method": "last-frame-to-first",
+      "overlapFrames": 1,
+      "transitionProvider": "pika-pikaframes",
+      "transitionDuration": 2
+    }
+  },
+
+  "voiceGeneration": {
+    "providers": [
+      {
+        "id": "elevenlabs",
+        "name": "ElevenLabs",
+        "apiEndpoint": "https://api.elevenlabs.io/v1",
+        "costPer1kChars": 0.30,
+        "quality": 10,
+        "emotionalRange": 8,
+        "languages": 29,
+        "cloneFromSeconds": 10,
+        "capabilities": ["voice-clone", "tts", "sound-effects", "voice-design"],
+        "bestFor": ["overall-best", "voice-cloning", "sound-effects"],
+        "notes": "Industry leader. Use for all primary character voices."
+      },
+      {
+        "id": "resemble",
+        "name": "Resemble AI",
+        "apiEndpoint": "https://api.resemble.ai/v2",
+        "costPer1kChars": 0.50,
+        "quality": 9,
+        "emotionalRange": 10,
+        "languages": 15,
+        "cloneFromSeconds": 5,
+        "capabilities": ["voice-clone", "tts", "emotion-control", "paralinguistic-tags"],
+        "bestFor": ["emotional-dialogue", "dramatic-scenes", "crying-laughing-whispering"],
+        "notes": "Best emotional control. Use [laugh], [sigh], [gasp] tags. More expensive."
+      },
+      {
+        "id": "azure-tts",
+        "name": "Microsoft Azure TTS",
+        "apiEndpoint": "https://speech.microsoft.com/api/v1",
+        "costPer1kChars": 0.015,
+        "quality": 7,
+        "emotionalRange": 6,
+        "languages": 150,
+        "capabilities": ["tts", "custom-voice", "ssml"],
+        "bestFor": ["localization", "dubbing", "budget-narration", "150-languages"],
+        "notes": "Cheapest at scale. Best for dubbing/localization. 600+ voices."
+      }
+    ],
+    "routing": {
+      "primaryDialogue": "elevenlabs",
+      "emotionalScenes": "resemble",
+      "narration": "elevenlabs",
+      "localization": "azure-tts",
+      "kidMode": "elevenlabs"
+    }
+  },
+
+  "musicGeneration": {
+    "providers": [
+      {
+        "id": "soundraw",
+        "name": "Soundraw",
+        "apiEndpoint": "https://api.soundraw.io/v1",
+        "costPerTrack": 0.50,
+        "quality": 8,
+        "capabilities": ["mood-generation", "bar-editing", "stem-export", "duration-control"],
+        "bestFor": ["background-music", "underscore", "production-pipeline"],
+        "hasAPI": true,
+        "commercialLicense": true,
+        "vocals": false,
+        "notes": "Best production tool. Clean licensing. Bar-level editing. Official API."
+      },
+      {
+        "id": "suno-v5",
+        "name": "Suno V5",
+        "apiEndpoint": "unofficial",
+        "costPerTrack": 0.10,
+        "quality": 10,
+        "capabilities": ["full-songs", "vocals", "mood-generation", "continuation", "stem-export"],
+        "bestFor": ["songs-with-vocals", "theme-songs", "montage-music"],
+        "hasAPI": false,
+        "commercialLicense": true,
+        "vocals": true,
+        "notes": "Best quality music with vocals. No official API — use third-party wrappers."
+      },
+      {
+        "id": "aiva",
+        "name": "AIVA",
+        "apiEndpoint": "enterprise-only",
+        "costPerTrack": 1.10,
+        "quality": 9,
+        "capabilities": ["orchestral", "cinematic", "style-transfer", "midi-export"],
+        "bestFor": ["orchestral-scores", "cinematic-themes", "classical"],
+        "hasAPI": false,
+        "commercialLicense": true,
+        "vocals": false,
+        "notes": "Best for orchestral film scores. Full copyright on Pro plan."
+      },
+      {
+        "id": "stable-audio",
+        "name": "Stable Audio 2.5",
+        "apiEndpoint": "https://api.stability.ai/v2beta/audio",
+        "costPerTrack": 0.30,
+        "quality": 8,
+        "capabilities": ["instrumental", "mood-generation", "duration-control"],
+        "bestFor": ["legally-safe-instrumentals", "api-pipeline"],
+        "hasAPI": true,
+        "commercialLicense": true,
+        "vocals": false,
+        "notes": "Fully licensed training data. Zero copyright risk. Good API."
+      }
+    ],
+    "routing": {
+      "underscore": "soundraw",
+      "themeMusic": "suno-v5",
+      "orchestralScore": "aiva",
+      "backgroundAmbient": "stable-audio",
+      "kidMode": "soundraw"
+    }
+  },
+
+  "soundEffects": {
+    "providers": [
+      {
+        "id": "elevenlabs-sfx",
+        "name": "ElevenLabs Sound Effects V2",
+        "apiEndpoint": "https://api.elevenlabs.io/v1/sound-generation",
+        "quality": 10,
+        "maxDuration": 30,
+        "sampleRate": 48000,
+        "capabilities": ["text-to-sfx", "seamless-looping", "ambient-generation"],
+        "bestFor": ["all-sound-effects", "ambient-beds", "foley"],
+        "notes": "Industry-leading SFX quality. 48kHz. Seamless looping."
+      },
+      {
+        "id": "stable-audio-sfx",
+        "name": "Stable Audio SFX",
+        "apiEndpoint": "https://api.stability.ai/v2beta/audio",
+        "quality": 7,
+        "capabilities": ["text-to-sfx", "ambient-generation"],
+        "bestFor": ["budget-sfx", "licensed-training-data"],
+        "notes": "Alternative with fully licensed training data."
+      }
+    ],
+    "routing": {
+      "primary": "elevenlabs-sfx",
+      "budget": "stable-audio-sfx"
+    }
+  },
+
+  "mixing": {
+    "provider": "auphonic",
+    "apiEndpoint": "https://auphonic.com/api",
+    "autoDucking": true,
+    "loudnessTarget": -16,
+    "dialoguePriority": true,
+    "costPerHour": 2.50,
+    "capabilities": ["multitrack-mix", "auto-ducking", "loudness-compliance", "noise-reduction"]
+  },
+
+  "environments": {
+    "panoramaProvider": "skybox-ai",
+    "skyboxApiEndpoint": "https://api.blockadelabs.com/v1",
+    "costPerPanorama": 0.40,
+    "resolution": "8K",
+    "format": "equirectangular",
+    "notes": "Generate 360-degree panoramas for each location. Reuse across all scenes in that location."
+  },
+
+  "parallelGeneration": {
+    "enabled": true,
+    "maxConcurrent": 10,
+    "strategy": "scene-pair",
+    "description": "Generate first frame and last frame of each shot in parallel. When user approves a background/location, immediately start generating all shots in that location. Queue transitions between scenes as soon as both adjacent shots are approved.",
+    "phases": [
+      {
+        "phase": 1,
+        "name": "Backgrounds & Locations",
+        "parallel": true,
+        "description": "Generate all location panoramas and background references simultaneously"
+      },
+      {
+        "phase": 2,
+        "name": "Character References",
+        "parallel": true,
+        "dependsOn": [],
+        "description": "Generate character reference sheets and train LoRAs in parallel"
+      },
+      {
+        "phase": 3,
+        "name": "Scene Keyframes",
+        "parallel": true,
+        "dependsOn": [1, 2],
+        "description": "Generate first and last frames for ALL shots in parallel (uses approved backgrounds + character refs)"
+      },
+      {
+        "phase": 4,
+        "name": "Video Generation",
+        "parallel": true,
+        "dependsOn": [3],
+        "description": "Generate video clips from approved first/last frame pairs in parallel"
+      },
+      {
+        "phase": 5,
+        "name": "Transitions",
+        "parallel": true,
+        "dependsOn": [4],
+        "description": "Generate transition clips between adjacent approved scenes"
+      },
+      {
+        "phase": 6,
+        "name": "Audio",
+        "parallel": true,
+        "dependsOn": [4],
+        "description": "Generate dialogue, music, and SFX in parallel with video"
+      },
+      {
+        "phase": 7,
+        "name": "Assembly & Mix",
+        "parallel": false,
+        "dependsOn": [4, 5, 6],
+        "description": "Final assembly: combine video + audio + transitions"
+      }
+    ]
+  },
+
+  "kidMode": {
+    "enabled": false,
+    "description": "Netflix-style kid profile mode with content guardrails and kid-friendly visual styles",
+    "visualStyles": ["cartoon", "watercolor", "claymation", "pixel-art", "anime-kid-friendly"],
+    "defaultStyle": "cartoon",
+    "contentGuardrails": {
+      "noViolence": true,
+      "noBlood": true,
+      "noWeapons": true,
+      "noScaryContent": true,
+      "noRomanticContent": true,
+      "noAlcoholDrugs": true,
+      "noSwearing": true,
+      "maxTensionLevel": 5,
+      "positiveMessagesRequired": true,
+      "educationalElementsEncouraged": true
+    },
+    "promptPrefixes": {
+      "imageGeneration": "child-friendly, colorful, safe for kids, no violence, no scary elements, bright and cheerful, ",
+      "videoGeneration": "family-friendly, safe for children, positive tone, ",
+      "musicGeneration": "upbeat, cheerful, child-friendly, ",
+      "voiceGeneration": "warm, friendly, enthusiastic, "
+    },
+    "promptBlacklist": [
+      "blood", "gore", "death", "kill", "murder", "weapon", "gun", "knife",
+      "scary", "horror", "terror", "nightmare", "dark", "sinister",
+      "sexy", "seductive", "romantic", "kiss", "intimate",
+      "drug", "alcohol", "smoking", "drunk",
+      "swear", "damn", "hell", "profanity"
+    ],
+    "allowedGenres": ["comedy", "adventure", "animation", "family", "fantasy", "musical", "sci-fi"],
+    "blockedGenres": ["horror", "thriller", "crime", "war"],
+    "maxEpisodeDuration": 25,
+    "ageRanges": {
+      "toddler": { "ages": "2-5", "style": "cartoon", "maxDuration": 10, "complexity": "simple" },
+      "kids": { "ages": "6-9", "style": "cartoon", "maxDuration": 22, "complexity": "moderate" },
+      "tweens": { "ages": "10-12", "style": "anime-kid-friendly", "maxDuration": 25, "complexity": "standard" }
+    }
+  },
+
+  "transitions": {
+    "types": [
+      {
+        "id": "scene-to-scene",
+        "name": "Standard Scene Transition",
+        "description": "Smooth visual transition between two scenes using last frame of scene A and first frame of scene B",
+        "provider": "pika-pikaframes",
+        "method": "multi-keyframe",
+        "duration": 2,
+        "prompt": "Smooth cinematic transition from {sceneA_description} to {sceneB_description}, continuous camera motion"
+      },
+      {
+        "id": "time-jump",
+        "name": "Time Jump Transition",
+        "description": "Visual transition indicating passage of time (dissolve, time-lapse effect)",
+        "provider": "pika-pikaframes",
+        "method": "multi-keyframe",
+        "duration": 3,
+        "prompt": "Time-lapse transition showing passage of time, {timeDescription}, smooth dissolve effect"
+      },
+      {
+        "id": "location-change",
+        "name": "Location Change Transition",
+        "description": "Transition from one location to another with establishing shot",
+        "provider": "kling-3.0",
+        "method": "first-last-frame",
+        "duration": 4,
+        "prompt": "Cinematic transition from {locationA} to {locationB}, aerial establishing shot, smooth camera movement"
+      },
+      {
+        "id": "match-cut",
+        "name": "Match Cut",
+        "description": "Visual match cut where a shape/movement in scene A matches scene B",
+        "provider": "pika-pikaframes",
+        "method": "multi-keyframe",
+        "duration": 1.5,
+        "prompt": "Match cut transition: {elementA} morphs into {elementB}, maintaining shape and movement continuity"
+      },
+      {
+        "id": "emotional-shift",
+        "name": "Emotional Shift Transition",
+        "description": "Color/mood transition reflecting emotional change between scenes",
+        "provider": "hailuo-2.3",
+        "method": "first-last-frame",
+        "duration": 2,
+        "prompt": "Mood transition from {moodA} to {moodB}, color grading shift, emotional atmosphere change"
+      }
+    ]
+  }
+}

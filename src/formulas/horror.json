@@ -1,0 +1,362 @@
+{
+  "id": "horror-feature",
+  "name": "Horror / Thriller Feature Film",
+  "description": "Horror-optimized structure with tension-release cycles, jump scare architecture, dread escalation, and the 16-beat horror pattern.",
+  "genre": "horror",
+  "format": "feature-film",
+  "baseStructure": "three-act",
+  "totalBeats": 16,
+  "beats": [
+    {
+      "id": "cold-open-kill",
+      "name": "Cold Open / Opening Kill",
+      "description": "An intense opening that establishes the threat. A victim we don't fully know encounters the horror. This is the 'promise' — this is the kind of fear this movie delivers.",
+      "purpose": "Hook the audience with immediate dread. Demonstrate the threat's power. Set the horror tone.",
+      "runtimePercentStart": 0,
+      "runtimePercentEnd": 5,
+      "durationPercent": 5,
+      "tensionLevel": 8,
+      "emotionalTone": "fearful",
+      "requiredElements": [
+        { "type": "action-sequence", "description": "Intense opening encounter with the threat", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "transitionIn": "fade-in",
+      "musicMood": "horror-drone",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "false-safety",
+      "name": "False Safety / Normal World",
+      "description": "Introduce the protagonist in their safe, normal world. CONTRAST with the cold open. The audience knows danger is coming; the characters don't.",
+      "purpose": "Establish dramatic irony. Make the audience care about these people before endangering them.",
+      "runtimePercentStart": 5,
+      "runtimePercentEnd": 15,
+      "durationPercent": 10,
+      "tensionLevel": 2,
+      "emotionalTone": "peaceful",
+      "requiredElements": [
+        { "type": "character-intro", "description": "Protagonist and group established in safe environment", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 3, "max": 5 },
+      "musicMood": "ambient",
+      "pacingSpeed": "slow"
+    },
+    {
+      "id": "warning-signs",
+      "name": "Warning Signs / Unsettling Details",
+      "description": "Subtle wrongness begins. Small details feel off. Characters dismiss these signs. The audience notices before the characters do.",
+      "purpose": "Begin building dread through atmospheric unease, not overt scares.",
+      "runtimePercentStart": 12,
+      "runtimePercentEnd": 20,
+      "durationPercent": 8,
+      "tensionLevel": 4,
+      "emotionalTone": "mysterious",
+      "requiredElements": [
+        { "type": "plot-point", "description": "At least 3 subtle warning signs the characters dismiss", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 2, "max": 4 },
+      "musicMood": "subtle-underscore",
+      "pacingSpeed": "slow"
+    },
+    {
+      "id": "first-encounter",
+      "name": "First Real Encounter",
+      "description": "The protagonist directly encounters the threat for the first time. Not the full horror — a taste. Something that could be explained away but deeply unsettles.",
+      "purpose": "The catalyst. The protagonist's world cracks. Can they ignore this? They try.",
+      "runtimePercentStart": 18,
+      "runtimePercentEnd": 22,
+      "durationPercent": 4,
+      "tensionLevel": 7,
+      "emotionalTone": "fearful",
+      "requiredElements": [
+        { "type": "confrontation", "description": "First direct encounter with the horror — ambiguous enough to deny", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "musicMood": "building-tension",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "denial-investigation",
+      "name": "Denial / Investigation",
+      "description": "Characters try to rationalize or investigate. Audience knows more than the characters. Tension from watching people walk toward danger while trying to explain it away.",
+      "purpose": "Build Hitchcockian suspense through dramatic irony and investigation.",
+      "runtimePercentStart": 22,
+      "runtimePercentEnd": 30,
+      "durationPercent": 8,
+      "tensionLevel": 5,
+      "emotionalTone": "anxious",
+      "requiredElements": [
+        { "type": "dialogue-heavy", "description": "Characters debate what they experienced — disbelief vs. fear", "mandatory": true },
+        { "type": "revelation", "description": "Investigation reveals partial truth about the threat", "mandatory": false }
+      ],
+      "suggestedSceneCount": { "min": 2, "max": 4 },
+      "musicMood": "suspense-pulse",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "escalation-1",
+      "name": "First Escalation / Someone Gets Hurt",
+      "description": "The threat escalates beyond denial. Someone is injured, taken, or killed. The group can no longer pretend everything is fine.",
+      "purpose": "Raise stakes permanently. Death/danger is real. No going back.",
+      "runtimePercentStart": 28,
+      "runtimePercentEnd": 35,
+      "durationPercent": 7,
+      "tensionLevel": 8,
+      "emotionalTone": "horrified",
+      "requiredElements": [
+        { "type": "action-sequence", "description": "Visceral confrontation — someone is hurt or killed", "mandatory": true },
+        { "type": "emotional-peak", "description": "Group reacts with genuine terror", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 2, "max": 3 },
+      "musicMood": "building-tension",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "false-plan",
+      "name": "The Plan / False Hope",
+      "description": "Characters formulate a plan to escape or defeat the threat. Brief sense of control and hope. The audience suspects this plan will fail.",
+      "purpose": "Give characters (and audience) a brief respite. Set up the plan's failure.",
+      "runtimePercentStart": 33,
+      "runtimePercentEnd": 40,
+      "durationPercent": 7,
+      "tensionLevel": 4,
+      "emotionalTone": "hopeful",
+      "requiredElements": [
+        { "type": "dialogue-heavy", "description": "Group devises a plan — feels logical and possible", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 2, "max": 3 },
+      "musicMood": "subtle-underscore",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "plan-fails",
+      "name": "Plan Fails / Midpoint Reversal",
+      "description": "The plan fails catastrophically. The threat is revealed to be far worse than imagined. A major revelation changes everything — the rules of the horror are different than expected.",
+      "purpose": "The midpoint. Everything the characters believed about the threat was wrong or incomplete.",
+      "runtimePercentStart": 45,
+      "runtimePercentEnd": 52,
+      "durationPercent": 7,
+      "tensionLevel": 9,
+      "emotionalTone": "horrified",
+      "requiredElements": [
+        { "type": "revelation", "description": "The true nature/scope of the threat is revealed", "mandatory": true },
+        { "type": "action-sequence", "description": "Plan collapses — possibly another death", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 2, "max": 3 },
+      "musicMood": "full-orchestral",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "paranoia-fracture",
+      "name": "Paranoia / Group Fracture",
+      "description": "The group turns on each other. Trust breaks down. Accusations, blame, paranoia. The real enemy might be inside the group.",
+      "purpose": "Internal conflict escalates alongside external threat. Isolation increases vulnerability.",
+      "runtimePercentStart": 50,
+      "runtimePercentEnd": 60,
+      "durationPercent": 10,
+      "tensionLevel": 7,
+      "emotionalTone": "anxious",
+      "requiredElements": [
+        { "type": "confrontation", "description": "Group members turn on each other", "mandatory": true },
+        { "type": "emotional-peak", "description": "Betrayal or abandonment within the group", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 3, "max": 5 },
+      "musicMood": "suspense-pulse",
+      "pacingSpeed": "medium"
+    },
+    {
+      "id": "picking-off",
+      "name": "Picking Off / Isolation",
+      "description": "Characters are separated and eliminated one by one. The group shrinks. Each death escalates in intensity. The protagonist becomes increasingly alone.",
+      "purpose": "Systematic elimination builds dread. Each death should feel different and worse.",
+      "runtimePercentStart": 58,
+      "runtimePercentEnd": 70,
+      "durationPercent": 12,
+      "tensionLevel": 8,
+      "emotionalTone": "fearful",
+      "requiredElements": [
+        { "type": "action-sequence", "description": "2-3 deaths/eliminations, each escalating in horror", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 3, "max": 6 },
+      "musicMood": "horror-drone",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "all-is-lost",
+      "name": "All Is Lost / Total Darkness",
+      "description": "The protagonist is alone (or with one other). All resources exhausted. All allies gone. The threat seems unstoppable. Maximum despair.",
+      "purpose": "Rock bottom. The protagonist has nothing left but themselves.",
+      "runtimePercentStart": 68,
+      "runtimePercentEnd": 73,
+      "durationPercent": 5,
+      "tensionLevel": 9,
+      "emotionalTone": "desperate",
+      "requiredElements": [
+        { "type": "emotional-peak", "description": "Protagonist completely alone, resources exhausted", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "musicMood": "silence",
+      "pacingSpeed": "very-slow"
+    },
+    {
+      "id": "dark-revelation",
+      "name": "Dark Revelation / Weakness Found",
+      "description": "In the darkest moment, the protagonist discovers the threat's weakness — or realizes the only way to survive. This knowledge comes at a cost.",
+      "purpose": "The key insight. Not a guaranteed win — just a possibility. A chance.",
+      "runtimePercentStart": 72,
+      "runtimePercentEnd": 77,
+      "durationPercent": 5,
+      "tensionLevel": 6,
+      "emotionalTone": "tense",
+      "requiredElements": [
+        { "type": "revelation", "description": "Protagonist discovers how to fight back — barely", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "musicMood": "building-tension",
+      "pacingSpeed": "slow"
+    },
+    {
+      "id": "final-stand",
+      "name": "Final Stand / Climactic Confrontation",
+      "description": "The protagonist faces the threat directly. Maximum tension sustained. The outcome is uncertain until the very end. This should be the longest sustained tension sequence.",
+      "purpose": "The climax. Everything built to this moment. Maximum horror, maximum courage.",
+      "runtimePercentStart": 77,
+      "runtimePercentEnd": 92,
+      "durationPercent": 15,
+      "tensionLevel": 10,
+      "emotionalTone": "fearful",
+      "requiredElements": [
+        { "type": "confrontation", "description": "Direct, sustained confrontation with the threat", "mandatory": true },
+        { "type": "action-sequence", "description": "Protagonist uses discovered weakness to fight back", "mandatory": true },
+        { "type": "emotional-peak", "description": "Moment where it seems the protagonist will lose", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 3, "max": 6 },
+      "musicMood": "full-orchestral",
+      "pacingSpeed": "very-fast"
+    },
+    {
+      "id": "apparent-victory",
+      "name": "Apparent Victory / False Ending",
+      "description": "The threat seems defeated. Relief floods in. The protagonist is safe... or are they? In horror, there is almost always one more scare.",
+      "purpose": "Set up the final scare. Let the audience relax so you can hit them one more time.",
+      "runtimePercentStart": 90,
+      "runtimePercentEnd": 95,
+      "durationPercent": 5,
+      "tensionLevel": 3,
+      "emotionalTone": "peaceful",
+      "requiredElements": [
+        { "type": "emotional-peak", "description": "Relief and apparent safety", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 2 },
+      "musicMood": "ambient",
+      "pacingSpeed": "slow"
+    },
+    {
+      "id": "final-scare",
+      "name": "Final Scare / Last Twist",
+      "description": "One last shock. The threat isn't fully dead, a new threat is revealed, or the protagonist realizes they've become the threat. The horror genre demands one last jolt.",
+      "purpose": "The signature horror ending. Leave the audience unsettled. Set up potential sequel.",
+      "runtimePercentStart": 94,
+      "runtimePercentEnd": 98,
+      "durationPercent": 4,
+      "tensionLevel": 9,
+      "emotionalTone": "horrified",
+      "requiredElements": [
+        { "type": "revelation", "description": "One final shock — the horror isn't truly over", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 1 },
+      "musicMood": "horror-drone",
+      "pacingSpeed": "fast"
+    },
+    {
+      "id": "ambiguous-end",
+      "name": "Ambiguous Ending",
+      "description": "The final image leaves the audience uncertain. Is the protagonist truly safe? Has the evil been contained? Horror endings should haunt, not comfort.",
+      "purpose": "Leave a lasting unease. The best horror lingers after the credits.",
+      "runtimePercentStart": 98,
+      "runtimePercentEnd": 100,
+      "durationPercent": 2,
+      "tensionLevel": 5,
+      "emotionalTone": "mysterious",
+      "requiredElements": [
+        { "type": "emotional-peak", "description": "Ambiguous final image that refuses to fully reassure", "mandatory": true }
+      ],
+      "suggestedSceneCount": { "min": 1, "max": 1 },
+      "transitionOut": "fade-to-black",
+      "musicMood": "horror-drone",
+      "pacingSpeed": "very-slow"
+    }
+  ],
+  "pacingProfile": {
+    "overall": "slow-burn",
+    "tensionCurve": [
+      { "runtimePercent": 0, "tensionLevel": 8, "label": "Cold Open Kill" },
+      { "runtimePercent": 7, "tensionLevel": 2, "label": "False Safety" },
+      { "runtimePercent": 15, "tensionLevel": 4, "label": "Warning Signs" },
+      { "runtimePercent": 20, "tensionLevel": 7, "label": "First Encounter" },
+      { "runtimePercent": 25, "tensionLevel": 4, "label": "Denial" },
+      { "runtimePercent": 32, "tensionLevel": 8, "label": "First Death" },
+      { "runtimePercent": 37, "tensionLevel": 4, "label": "False Plan" },
+      { "runtimePercent": 50, "tensionLevel": 9, "label": "Plan Fails" },
+      { "runtimePercent": 55, "tensionLevel": 7, "label": "Paranoia" },
+      { "runtimePercent": 65, "tensionLevel": 8, "label": "Picking Off" },
+      { "runtimePercent": 70, "tensionLevel": 9, "label": "All Is Lost" },
+      { "runtimePercent": 75, "tensionLevel": 6, "label": "Revelation" },
+      { "runtimePercent": 85, "tensionLevel": 10, "label": "Final Stand" },
+      { "runtimePercent": 92, "tensionLevel": 3, "label": "False Victory" },
+      { "runtimePercent": 96, "tensionLevel": 9, "label": "Final Scare" },
+      { "runtimePercent": 100, "tensionLevel": 5, "label": "Ambiguous End" }
+    ],
+    "sceneLength": {
+      "averageSeconds": 100,
+      "shortScenePercent": 25,
+      "longScenePercent": 20
+    }
+  },
+  "genreRules": [
+    { "rule": "Tension-release-tension cycle: never sustain peak tension for more than 5 minutes without a brief release", "timing": "throughout" },
+    { "rule": "Jump scares: maximum 5-7 per film, spaced at least 8-12 minutes apart", "timing": "throughout" },
+    { "rule": "Use Hitchcock's rule: suspense > surprise. Show the audience the bomb under the table", "timing": "throughout" },
+    { "rule": "Deaths must escalate in intensity: each death is worse than the last", "timing": "30-70%" },
+    { "rule": "The protagonist must earn survival through their own actions, not luck", "timing": "77-95%" },
+    { "rule": "Sound design is as important as visuals: silence before a scare, ambient dread throughout", "timing": "throughout" },
+    { "rule": "False scares (cat scares) should be used sparingly — maximum 2-3 per film", "timing": "throughout" },
+    { "rule": "The threat should be shown progressively: shadow → glimpse → partial reveal → full reveal", "timing": "0-77%" },
+    { "rule": "Isolation increases vulnerability — separate characters from help", "timing": "25-95%" },
+    { "rule": "Include at least one 'rules of the horror' scene where characters learn what they're dealing with", "timing": "22-35%" }
+  ],
+  "plotStructure": {
+    "mainPlot": {
+      "id": "main-survival",
+      "name": "Survival Against the Threat",
+      "description": "Protagonist must survive an escalating horror while discovering how to fight back",
+      "thematicFunction": "External horror forces confrontation with internal fear/weakness",
+      "involvedCharacters": []
+    },
+    "subPlots": [
+      {
+        "id": "sub-trust",
+        "name": "Trust / Betrayal",
+        "description": "Can the protagonist trust the people around them? Internal paranoia mirrors external threat",
+        "thematicFunction": "The real horror is human — distrust, selfishness, cowardice",
+        "involvedCharacters": []
+      }
+    ],
+    "screenTimeAllocation": {
+      "mainPlot": 70,
+      "subPlots": [30]
+    }
+  },
+  "characterArcTemplate": {
+    "arcType": "positive",
+    "phases": [
+      { "name": "Oblivious Safety", "runtimePercentStart": 0, "runtimePercentEnd": 15, "characterState": "Living in comfortable ignorance", "internalConflict": "Avoiding confrontation with personal fears", "externalManifest": "Normal life, no awareness of danger" },
+      { "name": "Denial", "runtimePercentStart": 15, "runtimePercentEnd": 30, "characterState": "Refusing to accept the reality of the threat", "internalConflict": "Fear vs. need to act", "externalManifest": "Rationalization, dismissal of evidence" },
+      { "name": "Reactive Fear", "runtimePercentStart": 30, "runtimePercentEnd": 55, "characterState": "Reacting to the threat but not effectively", "internalConflict": "Panic overriding rational thought", "externalManifest": "Running, hiding, following others' plans" },
+      { "name": "Stripping Away", "runtimePercentStart": 55, "runtimePercentEnd": 73, "characterState": "All support systems removed", "internalConflict": "Must face the fear they've always avoided", "externalManifest": "Alone, resourceless, at rock bottom" },
+      { "name": "Confrontation", "runtimePercentStart": 73, "runtimePercentEnd": 95, "characterState": "Facing the horror head-on", "internalConflict": "Accepting fear and acting despite it", "externalManifest": "Active, decisive, using intelligence over panic" },
+      { "name": "Scarred Survivor", "runtimePercentStart": 95, "runtimePercentEnd": 100, "characterState": "Survived but changed forever", "internalConflict": "The horror will always be part of them", "externalManifest": "Alive but haunted — a different person" }
+    ]
+  }
+}
