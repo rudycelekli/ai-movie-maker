@@ -110,7 +110,9 @@ Eyes: ${app.eyeColor || ''}.
 ${app.facialHair && app.facialHair !== 'none' ? `Facial hair: ${app.facialHair}.` : ''}
 ${features ? `Distinctive features: ${features}.` : ''}
 
-IMPORTANT: This is a FACE PORTRAIT ONLY — head and shoulders, cropped above the chest. Do NOT show clothing, body, or hands. Focus entirely on the face: skin texture, eye detail, hair, facial structure, expression. Clean neutral background. Studio lighting that reveals facial features clearly. This portrait will be used as a face reference for generating outfit and wardrobe images separately — the face must be sharp, detailed, and highly recognizable. Render in the "${style}" visual style.`;
+IMPORTANT: This is a FACE PORTRAIT ONLY — head and shoulders, cropped above the chest. Do NOT show clothing, body, or hands. Focus entirely on the face: skin texture, eye detail, hair, facial structure, expression. Clean neutral background. Studio lighting that reveals facial features clearly. This portrait will be used as a face reference for generating outfit and wardrobe images separately — the face must be sharp, detailed, and highly recognizable. Render in the "${style}" visual style.
+
+The portrait must be SHARP, HIGH-RESOLUTION, and HIGHLY DETAILED — this face will be used as the primary identity reference for this character across the entire production. Every freckle, wrinkle, and facial feature must be crystal clear and recognizable.`;
     } else {
       // Non-human character — full body reference showing the complete design
       prompt = `Character reference sheet for film production.
@@ -330,7 +332,17 @@ Background: ${frame.backgroundDescription}
 Characters:
 ${charDesc}
 ${continuityNote}
-Maintain exact character appearances from references. Characters must be recognizably the SAME PERSON across all shots — same face, same features, same gender, same clothing. Stunning cinematic composition, dramatic lighting, professional film production quality. Visually breathtaking. Consistent with "${style}" visual direction throughout.`;
+ABSOLUTE RULES FOR CHARACTER CONSISTENCY:
+- Characters must be recognizably the SAME PERSON across all shots
+- Same face structure, same skin tone, same hair color and style, same gender, same age
+- Same clothing in every shot within the same scene — never change outfits mid-scene
+- Use the provided character reference images as the GROUND TRUTH for appearance
+
+CINEMATIC QUALITY:
+- Stunning composition with dramatic lighting and depth
+- Include atmospheric details: dust particles, lens flares, ambient haze, reflections
+- Professional film production quality — every frame should look like a movie still
+- Visually breathtaking. Render in the "${style}" visual direction throughout.`;
     parts.push({ text: promptText });
 
     const response = await this.ai.models.generateContent({

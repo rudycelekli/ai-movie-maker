@@ -2699,6 +2699,12 @@
       // Render immediately — user can start reviewing characters, locations, scene breakdown
       renderPreProduction();
 
+      // Auto-generate character portraits if not already done
+      const charsNeedingPortraits = (lastGeneratedData?.characters?.characters || []).filter(c => !c.generatedPortrait && !isVoiceOnlyCharacter(c));
+      if (charsNeedingPortraits.length > 0) {
+        autoGeneratePortraits();
+      }
+
       // Fetch wardrobe & audio in PARALLEL in the background
       Promise.all([
         fetchWithTimeout('/api/enhance-wardrobe', {
@@ -2774,6 +2780,14 @@
   }
 
   function proceedToTimeline() {
+    // Check if all visible characters have portraits
+    const chars = (lastGeneratedData?.characters?.characters || []).filter(c => !isVoiceOnlyCharacter(c));
+    const missingPortraits = chars.filter(c => !c.generatedPortrait);
+    if (missingPortraits.length > 0) {
+      alert(`Please generate portraits for all characters first:\n${missingPortraits.map(c => '• ' + c.name).join('\n')}`);
+      return;
+    }
+
     document.getElementById('preproductionView').classList.remove('visible');
     const tv = document.getElementById('timelineView');
     tv.classList.add('visible');
@@ -2830,6 +2844,42 @@
       skin.includes('not visible') || skin.includes('voice only') ||
       hair.includes('not visible') || hair.includes('voice only') ||
       features.includes('never seen') || features.includes('voice only');
+  }
+
+  async function autoGeneratePortraits() {
+    const chars = lastGeneratedData?.characters?.characters || [];
+    const style = lastGeneratedData?.concept?.visualStyleRecommendation || 'cinematic';
+    let generated = 0;
+
+    for (let i = 0; i < chars.length; i++) {
+      const c = chars[i];
+      if (c.generatedPortrait || isVoiceOnlyCharacter(c)) continue;
+
+      try {
+        const res = await fetch('/api/generate-image/character', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: c.name,
+            appearance: c.appearance || {},
+            defaultOutfit: c.defaultOutfit,
+            style,
+          }),
+        });
+        const result = await res.json();
+        if (res.ok) {
+          c.generatedPortrait = { base64: result.base64, mimeType: result.mimeType };
+          generated++;
+          renderPreProduction(); // Update UI to show the new portrait
+        }
+      } catch (err) {
+        console.error(`Portrait generation failed for ${c.name}:`, err);
+      }
+    }
+
+    if (generated > 0) {
+      console.log(`Auto-generated ${generated} character portraits`);
+    }
   }
 
   async function generateCharacterImage(charIndex) {

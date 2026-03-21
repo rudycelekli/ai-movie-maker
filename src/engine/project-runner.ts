@@ -726,20 +726,43 @@ Generate JSON:
   ]
 }
 
-RULES:
-- EVERY shot is EXACTLY 8 seconds (durationSeconds: 8) — this is non-negotiable
-- Generate EXACTLY ${minShots}-${maxShots} shots to fill the ${sceneDuration}s scene budget
-- Start with an establishing/wide shot unless dramatically inappropriate
-- NOT EVERY SHOT IS MEDIUM EYE-LEVEL — vary sizes from extreme-wide to extreme-close-up, vary angles, vary movement
-- MUST include at least 1 insert/detail shot per scene showing an object or environmental detail
-- MUST include at least 1 close-up or extreme close-up of a face for emotional anchor
-- Emotional peaks need EXTREME close-ups — fill the frame with the face
-- The LAST FRAME of shot N MUST visually connect to FIRST FRAME of shot N+1 — same characters, same clothing, same position, smooth visual continuity
-- CHARACTER CONSISTENCY IS CRITICAL: Every character MUST look identical across ALL shots — same face, same gender, same age, same body type, same hair. Never change a character's appearance between shots.
-- Include FULL outfit descriptions for every character in every frame — describe the SAME outfit consistently
-- Every character's position must be spatially logical within the location
-- DESCRIBE LIGHTING in every frame — warm/cool, direction, quality, practical sources
-- Always cinematic: dramatic composition, professional film quality, visually stunning`;
+CINEMATIC SHOT TEMPLATE — MANDATORY RULES:
+
+🎬 SHOT VARIETY (every scene MUST include a mix):
+- ESTABLISHING: Wide/extreme-wide showing the full environment, setting the mood
+- MEDIUM: Character interactions, dialogue, body language
+- CLOSE-UP: Facial expressions, emotional reactions, eye detail
+- EXTREME CLOSE-UP: Hands, objects, textures — the storytelling details
+- INSERT/DETAIL: Objects that matter (a coffee cup, a document, a phone screen, a door handle)
+- REACTION: Character's face reacting to what just happened
+
+🎯 SHOT PLANNING:
+- EVERY shot is EXACTLY 8 seconds (durationSeconds: 8) — non-negotiable
+- Generate EXACTLY ${minShots}-${maxShots} shots for ${sceneDuration}s scene budget
+- First shot: establish location and mood (wide or medium-wide)
+- Middle shots: advance the story with varied angles (close-ups, inserts, reactions)
+- Last shot: emotional payoff or transition setup
+
+📐 CAMERA VARIETY — NEVER repeat the same setup:
+- Vary shot sizes: extreme-wide → wide → medium → close-up → extreme-close-up → insert
+- Vary angles: eye-level, low-angle (power), high-angle (vulnerability), dutch (unease), POV
+- Vary movement: dolly-in (intimacy), dolly-out (reveal), pan (following), static (tension), handheld (urgency)
+- EMOTIONAL PEAKS need EXTREME CLOSE-UPS — fill the frame with the face
+
+🔗 CONTINUITY — THIS IS NON-NEGOTIABLE:
+- The LAST FRAME of shot N MUST visually match FIRST FRAME of shot N+1
+- Same characters, same clothing, same hairstyle, same position, smooth visual flow
+- CHARACTER CONSISTENCY IS CRITICAL: Every character MUST look IDENTICAL across ALL shots
+  Same face, same gender, same age, same body type, same hair — NEVER change appearance
+- Include FULL outfit descriptions for EVERY character in EVERY frame — describe the EXACT SAME outfit
+- Characters must be spatially logical within the location
+
+🎨 VISUAL STORYTELLING:
+- DESCRIBE LIGHTING in every frame — direction, color temperature, quality, practical sources
+- Include atmospheric details: dust particles, steam, reflections, shadows
+- Objects tell stories: a half-eaten meal, a worn photograph, condensation on glass
+- Show hands and body language — not just faces
+- Always stunning cinematic composition, dramatic lighting, professional film quality`;
 
     const result = await this.claude.generateJSON<ShotOutput>(systemPrompt, userPrompt);
     this.allShots.set(sceneIndex, result);
