@@ -597,6 +597,36 @@ IMPORTANT:
     return result;
   }
 
+  // ─── CINEMATIC SHOT TEMPLATES ────────────────────────────────────────
+
+  private getShotTemplate(shotCount: number): { role: string; size: string; purpose: string }[] {
+    if (shotCount === 1) {
+      return [
+        { role: 'ESTABLISHING_TO_REVEAL', size: 'wide→close-up', purpose: 'Dolly from environment establishing shot into character close-up for emotional anchor' },
+      ];
+    }
+    if (shotCount === 2) {
+      return [
+        { role: 'ESTABLISHING_TO_SUBJECT', size: 'wide→medium', purpose: 'Dolly-in from full environment to character action — set the world then introduce the person' },
+        { role: 'DETAIL_TO_REACTION', size: 'insert→close-up', purpose: 'Extreme close-up of KEY OBJECT or detail (hands, eyes, texture) then emotional response' },
+      ];
+    }
+    if (shotCount === 3) {
+      return [
+        { role: 'ESTABLISHING', size: 'wide or extreme-wide', purpose: 'Full environment, atmosphere, mood — NO characters in focus, just the world' },
+        { role: 'SUBJECT_ACTION', size: 'medium or medium-close-up', purpose: 'Character doing something — dialogue, physical action, emotional moment' },
+        { role: 'DETAIL_INSERT_TO_REACTION', size: 'extreme-close-up→close-up', purpose: 'Key object extreme close-up (hands gripping something, object detail, texture) then pull to face reaction' },
+      ];
+    }
+    // 4+ shots: full coverage
+    return [
+      { role: 'ESTABLISHING', size: 'extreme-wide or wide', purpose: 'Full environment establishing — atmosphere, lighting, mood. Slow reveal.' },
+      { role: 'SUBJECT_ACTION', size: 'medium', purpose: 'Character action, dialogue, body language — the story beat' },
+      { role: 'DETAIL_INSERT', size: 'extreme-close-up or insert', purpose: 'KEY OBJECT or environmental detail — hands, textures, objects that tell the story. NO characters in frame.' },
+      { role: 'REACTION_PAYOFF', size: 'close-up or extreme-close-up', purpose: 'Character emotional response — fill the frame with the face. The emotional payoff.' },
+    ].slice(0, shotCount);
+  }
+
   // ─── PHASE 6: SHOTS ───────────────────────────────────────────────────
 
   async generateShots(input: InitialInput, sceneIndex: number): Promise<ShotOutput> {
@@ -726,43 +756,26 @@ Generate JSON:
   ]
 }
 
-CINEMATIC SHOT TEMPLATE — MANDATORY RULES:
+MANDATORY SHOT SEQUENCE — you MUST generate shots following this template:
+${this.getShotTemplate(targetShotCount).map((t, i) => `
+SHOT ${i + 1} — ${t.role} (${t.size})
+Purpose: ${t.purpose}
+${t.role.includes('DETAIL') || t.role.includes('INSERT') ? 'CRITICAL: This shot focuses on an OBJECT or DETAIL — hands gripping something, a document, a coffee cup, rain drops, a clock, textures. Show the storytelling through THINGS, not just people. Extreme close-up with shallow depth of field and atmospheric lighting.' : ''}
+${t.role.includes('ESTABLISHING') ? 'CRITICAL: Show the FULL ENVIRONMENT — architecture, weather, lighting mood, atmospheric details (dust, fog, reflections, light shafts). Characters can be small in frame or absent.' : ''}
+${t.role.includes('REACTION') || t.role.includes('PAYOFF') ? 'CRITICAL: FILL THE FRAME with the face. Show micro-expressions, eye detail, emotion. Shallow depth of field, dramatic lighting on the face.' : ''}
+`).join('')}
 
-🎬 SHOT VARIETY (every scene MUST include a mix):
-- ESTABLISHING: Wide/extreme-wide showing the full environment, setting the mood
-- MEDIUM: Character interactions, dialogue, body language
-- CLOSE-UP: Facial expressions, emotional reactions, eye detail
-- EXTREME CLOSE-UP: Hands, objects, textures — the storytelling details
-- INSERT/DETAIL: Objects that matter (a coffee cup, a document, a phone screen, a door handle)
-- REACTION: Character's face reacting to what just happened
-
-🎯 SHOT PLANNING:
-- EVERY shot is EXACTLY 8 seconds (durationSeconds: 8) — non-negotiable
-- Generate EXACTLY ${minShots}-${maxShots} shots for ${sceneDuration}s scene budget
-- First shot: establish location and mood (wide or medium-wide)
-- Middle shots: advance the story with varied angles (close-ups, inserts, reactions)
-- Last shot: emotional payoff or transition setup
-
-📐 CAMERA VARIETY — NEVER repeat the same setup:
-- Vary shot sizes: extreme-wide → wide → medium → close-up → extreme-close-up → insert
-- Vary angles: eye-level, low-angle (power), high-angle (vulnerability), dutch (unease), POV
-- Vary movement: dolly-in (intimacy), dolly-out (reveal), pan (following), static (tension), handheld (urgency)
-- EMOTIONAL PEAKS need EXTREME CLOSE-UPS — fill the frame with the face
-
-🔗 CONTINUITY — THIS IS NON-NEGOTIABLE:
+🔗 CONTINUITY — NON-NEGOTIABLE:
 - The LAST FRAME of shot N MUST visually match FIRST FRAME of shot N+1
-- Same characters, same clothing, same hairstyle, same position, smooth visual flow
-- CHARACTER CONSISTENCY IS CRITICAL: Every character MUST look IDENTICAL across ALL shots
-  Same face, same gender, same age, same body type, same hair — NEVER change appearance
-- Include FULL outfit descriptions for EVERY character in EVERY frame — describe the EXACT SAME outfit
-- Characters must be spatially logical within the location
+- Same characters, same clothing, same hairstyle, same spatial position
+- CHARACTER IDENTITY IS SACRED: Every character MUST look IDENTICAL across ALL shots — same face, same gender, same age, same body, same hair. NEVER change appearance.
+- Include FULL outfit descriptions for EVERY character in EVERY frame
 
-🎨 VISUAL STORYTELLING:
+🎨 CINEMATIC QUALITY:
 - DESCRIBE LIGHTING in every frame — direction, color temperature, quality, practical sources
-- Include atmospheric details: dust particles, steam, reflections, shadows
-- Objects tell stories: a half-eaten meal, a worn photograph, condensation on glass
-- Show hands and body language — not just faces
-- Always stunning cinematic composition, dramatic lighting, professional film quality`;
+- Atmospheric details: dust particles, steam, reflections, lens flares, shadows
+- Objects tell stories: show hands interacting with things, show environmental texture
+- Always stunning composition, dramatic depth, professional film quality`;
 
     const result = await this.claude.generateJSON<ShotOutput>(systemPrompt, userPrompt);
     this.allShots.set(sceneIndex, result);

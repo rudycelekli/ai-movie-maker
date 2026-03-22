@@ -3233,6 +3233,10 @@
       for (let fi = 0; fi < frames.length; fi++) {
         const f = frames[fi];
         if (!f) continue;
+        // Skip if this frame was already set by the continuity chain
+        if (f.generatedImage && shot._continuityType === 'same-location-reuse' && fi === 0) {
+          continue;
+        }
         if (btn) btn.textContent = `Generating frame ${fi + 1}/2...`;
         try {
           // Build continuity reference: chain from previous shot's last frame
@@ -3292,13 +3296,13 @@
     const btn = event?.target;
     if (btn) { btn.disabled = true; }
 
-    // Count total
+    // Count total frames
     for (let i = 0; i < scenes.length; i++) {
       const sceneShots = shots[i]?.shots || shots[String(i)]?.shots || [];
       total += sceneShots.length;
     }
 
-    // Chain frames: previous shot's last frame informs next shot's first frame
+    // Continuity chain state
     let previousLastFrame = null;
     let previousLocation = null;
     const cp = preProductionData?.continuityPlan?.entries || [];
@@ -3308,23 +3312,39 @@
       const scene = scenes[i];
       const sceneEntry = cp.find(e => e.sceneIndex === i);
       const currentLocation = sceneEntry?.locationName || scene?.locationName || '';
-      const locationChanged = previousLocation && currentLocation !== previousLocation;
+      const locationChanged = previousLocation !== null && currentLocation !== previousLocation;
 
       for (let j = 0; j < sceneShots.length; j++) {
         const shot = sceneShots[j];
         if (btn) btn.textContent = `Generating ${generated + 1}/${total}...`;
 
-        // Chain: ALWAYS pass previous shot's last frame for character continuity
-        // Even across location changes, characters should look the same
-        if (previousLastFrame && !shot.firstFrame?.generatedImage) {
-          shot._chainedFromPrevious = previousLastFrame;
+        // THREE-TIER CONTINUITY:
+        if (j === 0 && previousLastFrame) {
+          if (!locationChanged) {
+            // SAME LOCATION: Reuse previous last frame as this shot's first frame
+            // Skip generating first frame — use the exact previous image for perfect continuity
+            shot.firstFrame.generatedImage = previousLastFrame;
+            shot._continuityType = 'same-location-reuse';
+
+            // Update DOM immediately
+            const frameEl = document.querySelector(`[data-scene="${i}"][data-shot="${j}"] .timeline-frame.first .frame-img-placeholder`);
+            if (frameEl) {
+              frameEl.innerHTML = `<img src="data:${previousLastFrame.mimeType};base64,${previousLastFrame.base64}" style="width:100%;height:auto;border-radius:4px;">`;
+            }
+          } else {
+            // LOCATION CHANGE: Pass previous frame as character reference only
+            // Don't reuse the image (different background) but pass for character consistency
+            shot._chainedFromPrevious = previousLastFrame;
+            shot._continuityType = 'location-change';
+          }
         }
 
         try {
+          // Generate frames (will skip first frame if already set by continuity)
           await generateShotFrames(i, j);
           generated++;
 
-          // Store last frame for chaining to next shot
+          // Store last frame for chaining
           if (shot.lastFrame?.generatedImage) {
             previousLastFrame = shot.lastFrame.generatedImage;
           }
@@ -3483,6 +3503,12 @@ Render in the "${visualStyle}" visual style throughout. Professional film produc
       for (let j = 0; j < sceneShots.length; j++) {
         if (btn) btn.textContent = `Generating video ${generated + 1}/${total}...`;
         try {
+          // Ensure frames exist before generating video
+          const shot = sceneShots[j];
+          if (!shot?.firstFrame?.generatedImage || !shot?.lastFrame?.generatedImage) {
+            if (btn) btn.textContent = `Generating frames for ${generated + 1}/${total}...`;
+            await generateShotFrames(i, j);
+          }
           await generateShotVideo(i, j);
           generated++;
         } catch (err) {
